@@ -1,0 +1,2 @@
+rootProject.name='ESGI-SmartPlayer'
+include ':app'
