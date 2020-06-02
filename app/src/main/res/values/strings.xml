@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ESGI-SmartPlayer</string>
+    <string name="title_home">Home</string>
+    <string name="title_playlist_list">Playlists</string>
+    <string name="title_upload">Upload</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_music">Music</string>
+    <string name="playlist">Playlist</string>
+</resources>
