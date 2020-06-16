@@ -1,14 +1,9 @@
 package com.esgipa.smartplayer.server.authentication;
 
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import com.auth0.android.jwt.JWT;
-import com.esgipa.smartplayer.data.model.User;
-import com.esgipa.smartplayer.data.utils.UserProfileManager;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
 import com.esgipa.smartplayer.server.ServerInteraction;
@@ -73,7 +68,6 @@ public class SigninTask extends AsyncTask<String, Integer, RequestResult>{
                 result = new RequestResult(e);
             }
         }
-        Log.i("Signin Task", "signInRequest result: "+result.resultValue);
         return result;
     }
 

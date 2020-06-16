@@ -3,7 +3,6 @@ package com.esgipa.smartplayer.server.authentication;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
@@ -75,7 +74,6 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
                 result = new RequestResult(e);
             }
         }
-        Log.i("Signup Task", "signUpRequest result: "+result.resultValue);
         return result;
     }
 

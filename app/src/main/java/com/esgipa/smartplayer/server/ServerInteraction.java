@@ -128,7 +128,6 @@ public class ServerInteraction {
                 connection.disconnect();
             }
         }
-        Log.i("server interaction", "signInRequest result: "+result);
         return result;
     }
 

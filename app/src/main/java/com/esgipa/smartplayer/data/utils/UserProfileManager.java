@@ -26,8 +26,8 @@ public class UserProfileManager {
         SharedPreferences sp = context.getSharedPreferences(
                 PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-        return new User(sp.getString(NAME, null), sp.getString(EMAIL, null),
-                sp.getString(USERNAME, null));
+        return new User(sp.getString(NAME, null), sp.getString(USERNAME, null),
+                sp.getString(EMAIL, null));
     }
 
     public static void deleteUserInfo(Context context) {
