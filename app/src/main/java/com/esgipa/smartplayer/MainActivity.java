@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import com.esgipa.smartplayer.data.utils.UserProfileManager;
 import com.esgipa.smartplayer.music.MusicPlayerService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
+        Toast.makeText(this, "Hello " + UserProfileManager.getUserInfo(this)
+                .getUsername(), Toast.LENGTH_SHORT).show();
     }
 
     @Override

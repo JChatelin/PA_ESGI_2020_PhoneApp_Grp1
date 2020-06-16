@@ -6,4 +6,15 @@
     <string name="title_profile">Profile</string>
     <string name="title_music">Music</string>
     <string name="playlist">Playlist</string>
+    <string name="title_activity_authentication">Login</string>
+    <string name="username">username</string>
+    <string name="email">email</string>
+    <string name="password">password</string>
+    <string name="name">name</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+    <string name="username_or_email">username or email</string>
+    <string name="artist">Artist</string>
+    <string name="server_url">http://192.168.0.14:8082/</string>
+    <string name="register_success">User registered successfully!</string>
 </resources>

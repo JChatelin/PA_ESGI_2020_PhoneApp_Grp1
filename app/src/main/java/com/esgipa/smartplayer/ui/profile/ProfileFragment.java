@@ -1,37 +1,54 @@
 package com.esgipa.smartplayer.ui.profile;
 
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.esgipa.smartplayer.R;
+import com.esgipa.smartplayer.data.model.User;
+import com.esgipa.smartplayer.data.utils.UserProfileManager;
+import com.esgipa.smartplayer.ui.authentication.SigninActivity;
 
 public class ProfileFragment extends Fragment {
+    private EditText name, username, email;
 
-    private ProfileViewModel profileViewModel;
+    public ProfileFragment() {}
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         View root = inflater.inflate(R.layout.fragment_profile, container, false);
-        final TextView textView = root.findViewById(R.id.text_profile);
-        profileViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        name = root.findViewById(R.id.name);
+        username = root.findViewById(R.id.username);
+        email = root.findViewById(R.id.email);
+        Button logout = root.findViewById(R.id.logout_button);
+        logout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
+            public void onClick(View v) {
+                logout();
             }
         });
+        updateUserInfor();
         return root;
     }
 
+    private void updateUserInfor() {
+        User user = UserProfileManager.getUserInfo(requireContext());
+        name.setText(user.getName());
+        username.setText(user.getUsername());
+        email.setText(user.getEmail());
+    }
+
+    private void logout() {
+        UserProfileManager.deleteUserInfo(requireContext());
+        startActivity(new Intent(requireContext(), SigninActivity.class));
+        requireActivity().finish();
+    }
 }

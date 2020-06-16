@@ -23,13 +23,13 @@ public class UploadFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         uploadViewModel = new ViewModelProvider(this).get(UploadViewModel.class);
         View root = inflater.inflate(R.layout.fragment_upload, container, false);
-        final TextView textView = root.findViewById(R.id.text_upload);
+        /*final TextView textView = root.findViewById(R.id.text_upload);
         uploadViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
             }
-        });
+        });*/
         return root;
     }
 }
