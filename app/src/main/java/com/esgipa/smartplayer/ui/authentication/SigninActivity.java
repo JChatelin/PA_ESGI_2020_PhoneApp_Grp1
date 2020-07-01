@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,7 +17,7 @@ import com.auth0.android.jwt.JWT;
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.User;
-import com.esgipa.smartplayer.data.utils.UserProfileManager;
+import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.NetworkFragment;
 
@@ -68,9 +67,11 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
             }
             if (requestResult.has("token")) {
                 JWT jwt = new JWT(requestResult.getString("token"));
-                User user = new User(jwt.getClaim("name").asString(),
+                User user = new User(requestResult.getString("token"),
+                        jwt.getClaim("name").asString(),
                         jwt.getClaim("username").asString(),
-                        jwt.getClaim("email").asString());
+                        jwt.getClaim("email").asString(),
+                        true);
                 UserProfileManager.saveUserInfo(SigninActivity.this, user);
                 startActivity(new Intent(SigninActivity.this, MainActivity.class));
                 finish();
@@ -78,6 +79,16 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onProgressUpdate(int progressCode, int percentComplete) {
+        // we don't need to use this on sign in
+    }
+
+    @Override
+    public void finishOperation() {
+
     }
 
     @Override
@@ -111,4 +122,6 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
             networkFragment.sendSigninRequest(username, userPassword);
         }
     }
+
+
 }

@@ -83,6 +83,15 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
         }
     }
 
+    @Override
+    public void onProgressUpdate(int progressCode, int percentComplete) {
+        // we don't need to use this on sign up
+    }
+
+    @Override
+    public void finishOperation() {
+    }
+
     private void sendSignUpRequest() {
         String nameText = name.getText().toString();
         String usernameText = username.getText().toString();

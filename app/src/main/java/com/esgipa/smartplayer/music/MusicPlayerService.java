@@ -1,5 +1,6 @@
 package com.esgipa.smartplayer.music;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,11 +13,15 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.data.model.Song;
@@ -33,15 +38,19 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     /* media player variable */
     private MediaPlayer mediaPlayer;
+    private MediaSessionCompat mediaSession;
     private Song activeSong;
     private Context context;
+
 
     @Override
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        mediaSession = new MediaSessionCompat(context, "MediaSession");
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Song activeSong = (Song)intent.getSerializableExtra("activeSong");
@@ -102,15 +111,12 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    NOTIFICATION_CHANNEL_ID,
-                    "Music Player Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManagerCompat manager = getSystemService(NotificationManagerCompat.class);
-            if(manager != null) {
-                manager.createNotificationChannel(serviceChannel);
-            }
+            CharSequence name = "Music playing";
+            String description = "Show the current playing music";
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription(description);
+            NotificationManagerCompat notificationManager = getSystemService(NotificationManagerCompat.class);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 
@@ -119,12 +125,25 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0, notificationIntent, 0);
+
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Music Player Service")
                 .setContentText("playing : " + activeSong.getTitle())
-                .setContentIntent(pendingIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
+                // Stop the service when the notification is swiped away
+                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context,
+                        PlaybackStateCompat.ACTION_STOP))
+                // Make the transport controls visible on the lockscreen
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setDefaults(Notification.DEFAULT_VIBRATE)
+
+                // Apply the media style template
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                        .setShowActionsInCompactView(1)
+                        .setMediaSession(mediaSession.getSessionToken()))
+                .setContentIntent(pendingIntent);
+        NotificationManagerCompat.from(MusicPlayerService.this).notify(1, notification.build());
         startForeground(1, notification.build());
     }
 

@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.User;
-import com.esgipa.smartplayer.data.utils.UserProfileManager;
+import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.ui.authentication.SigninActivity;
 
 public class ProfileFragment extends Fragment {

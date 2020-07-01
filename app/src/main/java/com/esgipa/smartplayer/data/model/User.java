@@ -1,6 +1,7 @@
 package com.esgipa.smartplayer.data.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class User {
     @NonNull
@@ -12,6 +13,11 @@ public class User {
     @NonNull
     private String password;
 
+    private boolean logged;
+
+    @Nullable
+    private String authToken;
+
     private String role;
 
     public User(@NonNull String name, @NonNull String username, @NonNull String email) {
@@ -20,13 +26,34 @@ public class User {
         this.email = email;
     }
 
+    public User(@Nullable String authToken, @NonNull String name, @NonNull String username, @NonNull String email, boolean logged) {
+        this(name, username, email);
+        this.authToken = authToken;
+        this.logged = logged;
+    }
+
     public User(@NonNull String name, @NonNull String username, @NonNull String email,
                 @NonNull String password, @NonNull String role) {
-        this.name = name;
-        this.username = username;
-        this.email = email;
+        this(name, username, email);
         this.password = password;
         this.role = role;
+    }
+
+    public boolean isLogged() {
+        return logged;
+    }
+
+    public void setLogged(boolean logged) {
+        this.logged = logged;
+    }
+
+    @Nullable
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(@Nullable String authToken) {
+        this.authToken = authToken;
     }
 
     @NonNull

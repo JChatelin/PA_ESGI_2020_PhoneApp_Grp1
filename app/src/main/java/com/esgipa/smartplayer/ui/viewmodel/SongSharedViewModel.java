@@ -1,6 +1,8 @@
 package com.esgipa.smartplayer.ui.viewmodel;
 
 import android.content.Context;
+import android.net.Uri;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -19,6 +21,7 @@ public class SongSharedViewModel extends ViewModel {
     private MutableLiveData<List<Song>> songList;
     private MutableLiveData<Song> currentSong;
     private MutableLiveData<Integer> currentSongIndex;
+    private ArrayList<String> musicListUrl;
 
     public SongSharedViewModel() {
         songList = new MutableLiveData<>();
@@ -29,17 +32,21 @@ public class SongSharedViewModel extends ViewModel {
     public void setContext(Context context) {
         metaDataExtractor = new MetaDataExtractor(context);
     }
+
     public LiveData<List<Song>> getSongList() {
         loadSongs();
         return songList;
     }
 
     public LiveData<Song> getSong(int position) {
-        loadSongs();
         if(songList.getValue() != null) {
             currentSong.setValue(songList.getValue().get(position));
         }
         return currentSong;
+    }
+
+    public void setMusicListUrl(ArrayList<String> musicListUrl) {
+        this.musicListUrl = musicListUrl;
     }
 
     public LiveData<Integer> getCurrentSongIndex() {
@@ -68,7 +75,15 @@ public class SongSharedViewModel extends ViewModel {
 
     private void loadSongs() {
         List<Song> localSongList = new ArrayList<>();
-        Field[] fields = R.raw.class.getFields();
+        if(musicListUrl != null) {
+            for(String url: musicListUrl) {
+                Log.i("View Model", "loadSongs: " + url);
+                //url.replace("localhost", "192.168.0.14");
+                localSongList.add(metaDataExtractor.extract(url));
+            }
+        }
+
+        /*Field[] fields = R.raw.class.getFields();
 
         for (Field field : fields) {
             try {
@@ -77,7 +92,7 @@ public class SongSharedViewModel extends ViewModel {
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         songList.setValue(localSongList);
     }
 }
