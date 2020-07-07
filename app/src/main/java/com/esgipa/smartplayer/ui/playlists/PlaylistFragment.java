@@ -7,14 +7,19 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.esgipa.smartplayer.R;
+import com.esgipa.smartplayer.data.model.Playlist;
+import com.esgipa.smartplayer.utils.UserProfileManager;
 
 public class PlaylistFragment extends Fragment {
 
     private static final String PLAYLIST_POSITION = "playlist_position";
 
     private int playlistPosition;
+
+    private TextView playlistName, playlistCreator, playlistDescription;
 
     public PlaylistFragment() {
         // Required empty public constructor
@@ -33,13 +38,20 @@ public class PlaylistFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_playlist, container, false);
+        View root = inflater.inflate(R.layout.fragment_playlist, container, false);
+        playlistCreator = root.findViewById(R.id.playlist_creator);
+        playlistName = root.findViewById(R.id.playlist_name);
+        playlistDescription = root.findViewById(R.id.playlist_description);
+        //displayInformation();
+        return root;
     }
+
+    /*private void displayInformation() {
+        Playlist newPlaylist = (Playlist) getArguments().getSerializable(NEW_PLAYLIST);
+        playlistName.setText(newPlaylist.getName());
+        playlistDescription.setText(newPlaylist.getDescription());
+        playlistCreator.setText(newPlaylist.getCreator());
+    }*/
 }

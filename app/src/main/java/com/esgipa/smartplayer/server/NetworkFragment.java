@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager;
 
 import com.esgipa.smartplayer.server.authentication.SigninTask;
 import com.esgipa.smartplayer.server.authentication.SignupTask;
+import com.esgipa.smartplayer.server.transfert.DownloadTask;
 import com.esgipa.smartplayer.server.transfert.LoadMusicTask;
 import com.esgipa.smartplayer.server.transfert.UploadTask;
 
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 
@@ -30,6 +32,7 @@ public class NetworkFragment extends Fragment {
     private SigninTask signinTask;
     private SignupTask signupTask;
     private UploadTask uploadTask;
+    private DownloadTask downloadTask;
     private LoadMusicTask loadMusicTask;
     private String urlString;
 
@@ -98,12 +101,25 @@ public class NetworkFragment extends Fragment {
         cancelUpload();
         uploadTask = new UploadTask(callback, musicFileStream, authToken, fileName);
         uploadTask.execute(urlString);
-        Log.i(TAG, "uplaodMusic: upload starting");
+        Log.i(TAG, "uplaodMusic: upload started");
+    }
+
+    public void downloadMusic(OutputStream musicFileStream, String authToken, String musicName) {
+        cancelDownload();
+        downloadTask = new DownloadTask(callback, musicFileStream, authToken, musicName);
+        downloadTask.execute(urlString);
+        Log.i(TAG, "downloadMusic: download started");
     }
 
     public void cancelUpload() {
         if (uploadTask != null) {
             uploadTask.cancel(true);
+        }
+    }
+
+    public void cancelDownload() {
+        if (downloadTask != null) {
+            downloadTask.cancel(true);
         }
     }
 }

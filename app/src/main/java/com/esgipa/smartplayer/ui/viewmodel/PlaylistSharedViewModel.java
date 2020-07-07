@@ -21,32 +21,27 @@ public class PlaylistSharedViewModel extends ViewModel {
         currentPlaylist = new MutableLiveData<>();
     }
 
-    public void setContext(Context context) { }
     public LiveData<List<Playlist>> getPlaylistList() {
-        loadPlaylists();
+        //loadPlaylists();
         return playlistList;
     }
 
     public LiveData<Playlist> getPlaylist(int position) {
-        loadPlaylists();
+        //loadPlaylists();
         if(playlistList.getValue() != null) {
             currentPlaylist.setValue(playlistList.getValue().get(position));
         }
         return currentPlaylist;
     }
 
+    public void addPlaylist(Playlist playlist) {
+        List<Playlist> list = playlistList.getValue();
+        list.add(playlist);
+        playlistList.setValue(list);
+    }
+
     private void loadPlaylists() {
         List<Playlist> localPlaylistList = new ArrayList<>();
-        /*Field[] fields = R.raw.class.getFields();
-
-        for (Field field : fields) {
-            try {
-                int resourceId = field.getInt(field);
-                localPlaylistList.add(metaDataExtractor.extract(resourceId));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }*/
         playlistList.setValue(localPlaylistList);
     }
 }

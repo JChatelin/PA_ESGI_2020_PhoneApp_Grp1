@@ -40,7 +40,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
 
     private Handler myHandler = new Handler();
 
-    private ImageView albumArt, playPause, previousSong, nextSong;
+    private ImageView albumArt, playPause, previousSong, nextSong, download, add_to_playlist;
     private TextView musicTitle, musicArtist, musicAlbumTitle, playTimeStart, playTimeEnd;
     private SeekBar playTimeBar;
 
@@ -73,6 +73,9 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         previousSong = root.findViewById(R.id.previous);
         nextSong = root.findViewById(R.id.next);
 
+        download = root.findViewById(R.id.download);
+        add_to_playlist = root.findViewById(R.id.add_to_playlist);
+
         songSharedViewModel.setContext(requireContext());
 
         songList = songSharedViewModel.getSongList().getValue();
@@ -83,12 +86,27 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         nextSong.setOnClickListener(this);
         playTimeBar.setOnSeekBarChangeListener(this);
 
+        download.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        add_to_playlist.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.chooseDirectory();
+            }
+        });
+
         songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
                 Log.d("songIndex", "onChanged: " + integer);
                 currentSong = songSharedViewModel.getSong(integer).getValue();
                 displaySongMetadata(currentSong);
+                mainActivity.setDownlaodMusicName(currentSong.getTitle());
                 musicPlayerService.setActiveSong(currentSong);
                 currentSongIndex = integer;
             }
@@ -210,4 +228,6 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     public void onStopTrackingTouch(SeekBar seekBar) {
         // do nothing
     }
+
+
 }

@@ -1,8 +1,6 @@
 package com.esgipa.smartplayer.utils;
 
-import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,8 +13,7 @@ public class StreamReader {
 
     public static JSONObject readStream(InputStream stream, int maxReadSize)
             throws IOException, JSONException {
-        Reader reader = null;
-        reader = new InputStreamReader(stream, "UTF-8");
+        Reader reader = new InputStreamReader(stream, "UTF-8");
         char[] rawBuffer = new char[maxReadSize];
         int readSize;
         StringBuilder buffer = new StringBuilder();
@@ -29,18 +26,5 @@ public class StreamReader {
         }
         return new JSONObject(buffer.toString());
     }
-
-    /*private static File getFile(InputStream stream) throws IOException {
-        DataInputStream dis = new DataInputStream(stream);
-        byte[] buffer = new byte[maxBufferSize];
-        int readSize;
-        while (((readSize = dis.read(buffer)) != -1)) {
-            if (readSize > maxBufferSize) {
-                readSize = maxBufferSize;
-            }
-            buffer = rawBuffer, 0, readSize);
-            maxReadSize -= readSize;
-        }
-    }*/
 }
 

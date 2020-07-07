@@ -12,14 +12,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.OpenableColumns;
-import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.auth0.android.jwt.JWT;
-import com.esgipa.smartplayer.data.model.User;
-import com.esgipa.smartplayer.ui.authentication.SigninActivity;
 import com.esgipa.smartplayer.ui.viewmodel.SongSharedViewModel;
 import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.music.MusicPlayerService;
@@ -27,9 +21,6 @@ import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.NetworkFragment;
 import com.esgipa.smartplayer.ui.viewmodel.DataTransfertViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,15 +34,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements Callback<JSONObject> {
 
     private static final String musicUrl = "http://192.168.0.14:8082/file";
 
-    private static final int REQUEST_CODE = 10;
+    private static final int REQUEST_CODE_UPLOAD = 10;
+    private static final int REQUEST_CODE_DOWNLOAD = 15;
 
     private MusicPlayerService musicPlayerService;
     public boolean musicServiceBound = false;
@@ -59,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
     public boolean downloading = false;
 
     private NetworkFragment networkFragment;
+    private String downlaodMusicName;
 
     private DataTransfertViewModel dataTransfertViewModel;
     private SongSharedViewModel songSharedViewModel;
@@ -90,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
         networkFragment.changeUrl(url);
     }
 
+    public void setDownlaodMusicName(String fileName) {
+        downlaodMusicName = fileName;
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -202,6 +202,10 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
         networkFragment.uplaodMusic(musicFileStream, authToken, fileName);
     }
 
+    private void downloadMusic(OutputStream musicFileStream, String authToken, String musicName) {
+        networkFragment.downloadMusic(musicFileStream, authToken, musicName);
+    }
+
     public void loadAllMusic(String authToken) {
         networkFragment.loadAllMusic(authToken);
     }
@@ -209,13 +213,19 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
     public void pickUpMusic() {
         Intent chooseMusicFile = new Intent(Intent.ACTION_GET_CONTENT);
         chooseMusicFile.setType("*/*");
-        startActivityForResult(chooseMusicFile, REQUEST_CODE);
+        startActivityForResult(chooseMusicFile, REQUEST_CODE_UPLOAD);
+    }
+
+    public void chooseDirectory() {
+        Intent chooseMusicFile = new Intent(Intent.ACTION_GET_CONTENT);
+        chooseMusicFile.setType("*/");
+        startActivityForResult(chooseMusicFile, REQUEST_CODE_DOWNLOAD);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE) {
+        if (requestCode == REQUEST_CODE_UPLOAD) {
             if (resultCode == Activity.RESULT_OK) {
                 if (data != null) {
                     String musicPath = data.getData().getPath();
@@ -230,6 +240,25 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
                         uploadMusic(musicFileStream, UserProfileManager.getUserInfo(this).getAuthToken(), getFileName(data.getData()));
                     } else {
                         Toast.makeText(this, "No music selected.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+        if(requestCode == REQUEST_CODE_DOWNLOAD) {
+            if(resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    String directoryPath = data.getData().getPath();
+                    if (directoryPath != null) {
+                        String musicPath = directoryPath+downlaodMusicName+".mp3";
+                        File newMusicFile = new File(musicPath);
+                        try {
+                            OutputStream musicFileStream = new FileOutputStream(newMusicFile);
+                            downloadMusic(musicFileStream, UserProfileManager.getUserInfo(this).getAuthToken(), downlaodMusicName);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Toast.makeText(this, "No directory selected.", Toast.LENGTH_SHORT).show();
                     }
                 }
             }

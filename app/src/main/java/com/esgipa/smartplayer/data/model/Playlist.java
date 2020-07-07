@@ -3,7 +3,9 @@ package com.esgipa.smartplayer.data.model;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class Playlist {
+import java.io.Serializable;
+
+public class Playlist implements Serializable {
     @NonNull
     private String name;
     @NonNull
