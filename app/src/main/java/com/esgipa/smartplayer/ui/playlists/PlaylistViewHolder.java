@@ -12,24 +12,24 @@ public class PlaylistViewHolder extends RecyclerView.ViewHolder implements View.
     TextView playlistCreator;
     TextView playlistDescription;
 
-    OnPlaylistListener onPlaylistListener;
+    OnPlaylistClickListener onPlaylistClickListener;
 
-    public PlaylistViewHolder(View itemView, OnPlaylistListener onPlaylistListener) {
+    public PlaylistViewHolder(View itemView, OnPlaylistClickListener onPlaylistClickListener) {
         super(itemView);
         this.playlistName = itemView.findViewById(R.id.playlist_name);
         this.playlistCreator = itemView.findViewById(R.id.playlist_creator);
         this.playlistDescription = itemView.findViewById(R.id.playlist_description);
-        this.onPlaylistListener = onPlaylistListener;
+        this.onPlaylistClickListener = onPlaylistClickListener;
 
         itemView.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        onPlaylistListener.onPlaylistClick(getAdapterPosition());
+        onPlaylistClickListener.onPlaylistClick(getAdapterPosition());
     }
 
-    public interface OnPlaylistListener {
+    public interface OnPlaylistClickListener {
         void onPlaylistClick(int position);
     }
 }

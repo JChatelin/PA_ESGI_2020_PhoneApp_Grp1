@@ -26,7 +26,7 @@ import org.json.JSONObject;
 
 
 public class SigninActivity extends AppCompatActivity implements Callback<JSONObject> {
-    private static final String signInUrl = "http://192.168.0.14:8082/auth/signin";
+    private static final String signInPath = "auth/signin";
 
     private EditText usernameOrEmail;
     private EditText password;
@@ -39,6 +39,7 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
+        String signInUrl = getResources().getString(R.string.server_url)+signInPath;
         usernameOrEmail = findViewById(R.id.username);
         password = findViewById(R.id.password);
         signUpText = findViewById(R.id.sign_up_link);

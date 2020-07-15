@@ -1,7 +1,6 @@
 package com.esgipa.smartplayer.ui.playlists;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,19 +13,24 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.ui.viewmodel.PlaylistSharedViewModel;
+import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
-public class PlaylistListFragment extends Fragment implements PlaylistViewHolder.OnPlaylistListener {
+public class PlaylistListFragment extends Fragment implements PlaylistViewHolder.OnPlaylistClickListener {
 
     private static final String NEW_PLAYLIST = "new_playlist";
 
     private PlaylistSharedViewModel playlistSharedViewModel;
     private FloatingActionButton createPlaylist;
+    private String loadPlaylistUrl;
+
+    private MainActivity mainActivity;
 
     public static PlaylistListFragment newInstance(Playlist newPlaylist) {
         PlaylistListFragment fragment = new PlaylistListFragment();
@@ -38,8 +42,14 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, final Bundle savedInstanceState) {
-        playlistSharedViewModel = new ViewModelProvider(this).get(PlaylistSharedViewModel.class);
+        playlistSharedViewModel = new ViewModelProvider(requireActivity()).get(PlaylistSharedViewModel.class);
         View root = inflater.inflate(R.layout.fragment_playlist_list, container, false);
+        loadPlaylistUrl = requireContext().getResources().getString(R.string.server_url);
+        loadPlaylistUrl += "playlist";
+
+        mainActivity = (MainActivity) requireActivity();
+        mainActivity.setUrl(loadPlaylistUrl);
+        mainActivity.loadAllPlaylist(UserProfileManager.getUserInfo(requireContext()).getAuthToken());
         final RecyclerView recyclerView = root.findViewById(R.id.recyclerView);
         final PlaylistRecyclerViewAdapter playlistRecyclerViewAdapter = new PlaylistRecyclerViewAdapter(requireContext(), this);
         createPlaylist = root.findViewById(R.id.newPlaylist);
@@ -49,15 +59,9 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
                 openPlaylistCreationForm();
             }
         });
-        /*Bundle bundle = getArguments();
-        if(bundle != null) {
-            Playlist newPlaylist = (Playlist) bundle.getSerializable(NEW_PLAYLIST);
-            playlistSharedViewModel.addPlaylist(newPlaylist);
-        }*/
         playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
             @Override
             public void onChanged(@Nullable List<Playlist> playlistList) {
-                Log.i("Playlist List", "onCreateView: list len : " + playlistList.size());
                 playlistRecyclerViewAdapter.setPlaylistList(playlistList);
                 recyclerView.setAdapter(playlistRecyclerViewAdapter);
             }
@@ -75,10 +79,7 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
 
     @Override
     public void onPlaylistClick(int position) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("playlistPosition", position);
-        PlaylistFragment playlistFragment = new PlaylistFragment();
-        playlistFragment.setArguments(bundle);
+        PlaylistFragment playlistFragment = PlaylistFragment.newInstance(position);
         FragmentTransaction fragmentTransaction = getParentFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.nav_host_fragment, playlistFragment);
         fragmentTransaction.addToBackStack(null);

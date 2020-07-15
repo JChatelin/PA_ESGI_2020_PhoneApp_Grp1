@@ -1,16 +1,13 @@
-package com.esgipa.smartplayer.server.authentication;
+package com.esgipa.smartplayer.server.filetransfert;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.esgipa.smartplayer.utils.ConnectivityUtils;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
-import com.esgipa.smartplayer.utils.StreamReader;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,27 +16,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 
-public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
-    /**
-     * Implementation of AsyncTask designed to fetch data from the network.
-     */
+public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
     private Callback<JSONObject> callback;
-    private String name, username, email, password;
-    private ArrayList<String> role;
+    private OutputStream musicFileStream;
+    private String authToken;
+    private final static int maxBufferSize = 20 * 1024;
 
-    public SignupTask(Callback<JSONObject> callback, String name, String username, String email,
-                      String password, ArrayList<String> role) {
+    public DownloadTask(Callback<JSONObject> callback, OutputStream musicFileStream, String authToken) {
         setCallback(callback);
-        this.name = name;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.role = role;
+        this.musicFileStream = musicFileStream;
+        this.authToken = authToken;
     }
 
-    public void setCallback(Callback<JSONObject> callback) {
+    void setCallback(Callback<JSONObject> callback) {
         this.callback = callback;
     }
 
@@ -54,7 +44,7 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
                     (networkInfo.getType() != ConnectivityManager.TYPE_WIFI
                             && networkInfo.getType() != ConnectivityManager.TYPE_MOBILE)) {
                 // If no connectivity, cancel task and update Callback with null data.
-                callback.updateUi(ConnectivityUtils.noConnection());
+                callback.updateUi(null);
                 cancel(true);
             }
         }
@@ -70,9 +60,9 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
             String urlString = urls[0];
             try {
                 URL url = new URL(urlString);
-                JSONObject resultJson = signUpRequest(url, name, username, email, password, role);
-                if (resultJson != null) {
-                    result = new RequestResult(resultJson);
+                JSONObject jsonResult = downloadMusic(url, musicFileStream, authToken);//downloadUrl(url);
+                if (jsonResult != null) {
+                    result = new RequestResult(jsonResult);
                 } else {
                     throw new IOException("No response received.");
                 }
@@ -84,22 +74,17 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
     }
 
     /**
-     * Updates the Callback with the result.
+     * Updates the DownloadCallback with the result.
      */
     @Override
     protected void onPostExecute(RequestResult result) {
         if (result != null && callback != null) {
             if (result.exception != null) {
-                JSONObject jsonError = new JSONObject();
-                try {
-                    jsonError.put("Error", result.exception.getMessage());
-                    callback.updateUi(jsonError);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            } else {
+                callback.updateUi(result.resultValue);
+            } else if (result.resultValue != null) {
                 callback.updateUi(result.resultValue);
             }
+            callback.finishOperation();
         }
     }
 
@@ -110,52 +95,48 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
     protected void onCancelled(RequestResult result) {
     }
 
-    private JSONObject signUpRequest(URL serverUrl, String name, String username, String email,
-                                           String password, ArrayList<String> role) throws IOException {
+
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        callback.onProgressUpdate(Callback.Progress.PROCESS_INPUT_STREAM_IN_PROGRESS, values[0]);
+    }
+
+    private JSONObject downloadMusic(URL serverUrl, OutputStream musicFileStream, String authToken) throws IOException, JSONException {
         InputStream stream = null;
         HttpURLConnection connection = null;
         JSONObject result = null;
+
         try {
             connection = (HttpURLConnection) serverUrl.openConnection();
+
+            // Timeout for reading InputStream arbitrarily set to 3000ms.
             connection.setReadTimeout(15000);
+            // Timeout for connection.connect() arbitrarily set to 3000ms.
             connection.setConnectTimeout(15000);
-            connection.setRequestMethod("POST");
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+
+            connection.setRequestProperty("Authorization", "Bearer " + authToken);
             connection.setRequestProperty("Content-Type", "application/json; UTF-8");
             connection.setRequestProperty("Accept", "application/json");
 
-            // Already true by default but setting just in case; needs to be true since this request
-            // is carrying an input (response) body.
-            connection.setDoInput(true);
-            connection.setDoOutput(true);
-
-            JSONObject jsonBody = new JSONObject()
-                    .put("name", name)
-                    .put("username", username)
-                    .put("email", email)
-                    .put("password", password)
-                    .put("role", new JSONArray(role));
-
-            Log.i("server interaction", "signUpRequest query: "+jsonBody.toString());
-            OutputStream os = connection.getOutputStream();
-            byte[] input = jsonBody.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
-            os.close();
-            // parameters end
-
+            Log.i("Download", "downloadMusic: " + serverUrl.toString());
             connection.connect();
             int responseCode = connection.getResponseCode();
-            switch(responseCode) {
-                case 200:
+            switch (responseCode) {
+                case HttpURLConnection.HTTP_OK:
                     stream = connection.getInputStream();
                     if (stream != null) {
-                        result = StreamReader.readStream(stream, 500);
+                        readMusicDataStream(stream, musicFileStream);
+                        result = new JSONObject("Download Finished.");
                     }
                     break;
+                case HttpURLConnection.HTTP_UNAUTHORIZED:
+                    throw new IOException("Access denied.");
                 default:
                     throw new IOException("An error occurred.");
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         } finally {
             if (stream != null) {
                 stream.close();
@@ -165,5 +146,18 @@ public class SignupTask extends AsyncTask<String, Integer, RequestResult> {
             }
         }
         return result;
+    }
+
+    public void readMusicDataStream(InputStream stream, OutputStream musicFileStream) throws IOException {
+        byte[] buffer = new byte[maxBufferSize];
+        final int maxLength = stream.available();
+        int length, progress = 0;
+        while ((length = stream.read(buffer)) != -1) {
+            musicFileStream.write(buffer, 0, length);
+            musicFileStream.flush();
+
+            progress += length;
+            publishProgress((100 * progress) / maxLength);
+        }
     }
 }

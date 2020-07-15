@@ -12,19 +12,26 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.User;
+import com.esgipa.smartplayer.music.MusicPlayerService;
 import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.ui.authentication.SigninActivity;
 
 public class ProfileFragment extends Fragment {
     private TextView name, username, email;
 
+    private MusicPlayerService musicPlayerService;
+    private MainActivity mainActivity;
+
     public ProfileFragment() {}
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_profile, container, false);
+        mainActivity = (MainActivity) requireActivity();
+        musicPlayerService = mainActivity.getMusicPlayerService();
         name = root.findViewById(R.id.name);
         username = root.findViewById(R.id.username);
         email = root.findViewById(R.id.email);
@@ -47,6 +54,8 @@ public class ProfileFragment extends Fragment {
     }
 
     private void logout() {
+        musicPlayerService.pauseSong();
+        musicPlayerService.stopSelf();
         UserProfileManager.deleteUserInfo(requireContext());
         startActivity(new Intent(requireContext(), SigninActivity.class));
         requireActivity().finish();

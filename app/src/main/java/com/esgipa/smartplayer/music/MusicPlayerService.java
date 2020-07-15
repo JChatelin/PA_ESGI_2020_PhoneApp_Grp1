@@ -24,10 +24,14 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.esgipa.smartplayer.MainActivity;
+import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.data.model.Song;
+import com.esgipa.smartplayer.utils.UserProfileManager;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MusicPlayerService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener {
@@ -42,6 +46,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private Song activeSong;
     private Context context;
 
+    private OnSongPlayingListener onSongPlayingListener;
+    private Map<String, String> headers;
+
+    private List<Song> playlist;
+    private int currentPlaylistSongPosition = 0;
+
+    public boolean isStartForPlaylist = false;
+
 
     @Override
     public void onCreate() {
@@ -53,6 +65,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + UserProfileManager.getUserInfo(this).getAuthToken());
         Song activeSong = (Song)intent.getSerializableExtra("activeSong");
         if(activeSong == null) stopSelf();
         createNotification(activeSong);
@@ -89,6 +103,10 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
+        mediaPlayer.start();
+        if(!isStartForPlaylist) {
+            onSongPlayingListener.onSongPlaying();
+        }
     }
 
     @Override
@@ -100,7 +118,29 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        mediaPlayer.stop();
+        resumePosition = 0;
+        if(isStartForPlaylist) {
+            if(currentPlaylistSongPosition < playlist.size() - 1) {
+                currentPlaylistSongPosition++;
+                Song currentSong = playlist.get(currentPlaylistSongPosition);
+                setActiveSong(currentSong);
+                playSong();
+            } else if(currentPlaylistSongPosition == playlist.size() - 1) {
+                stopMedia();
+                currentPlaylistSongPosition = 0;
+            }
+        } else {
+            stopMedia();
+        }
+    }
+
+    public void setOnSongPlayingListener(OnSongPlayingListener onSongPlayingListener) {
+        this.onSongPlayingListener = onSongPlayingListener;
+    }
+
+    public void setPlaylist(List<Song> playlist, int position) {
+        this.playlist = playlist;
+        this.currentPlaylistSongPosition = position;
     }
 
     public class LocalBinder extends Binder {
@@ -174,7 +214,11 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     }
 
     public int getMusicCurrentPosition() {
-        return mediaPlayer.getCurrentPosition();
+        if(mediaPlayer.isPlaying()) {
+            return mediaPlayer.getCurrentPosition();
+        } else {
+            return 0;
+        }
     }
 
     public void playSong() {
@@ -193,9 +237,11 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
-    private void stopMedia() {
+    public void stopMedia() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
+            mediaPlayer.reset();
+            resumePosition = 0;
         }
     }
 
@@ -228,5 +274,10 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
             stopMedia();
             setActiveSong(songList.get(--songIndex));
         }
+    }
+
+    public interface OnSongPlayingListener {
+        void onSongPlaying();
+        void onSongStop();
     }
 }

@@ -1,4 +1,4 @@
-package com.esgipa.smartplayer.ui.home;
+package com.esgipa.smartplayer.ui.playlists;
 
 import android.content.Context;
 import android.view.LayoutInflater;

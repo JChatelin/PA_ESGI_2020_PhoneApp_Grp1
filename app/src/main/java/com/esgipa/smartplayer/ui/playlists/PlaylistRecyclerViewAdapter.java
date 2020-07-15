@@ -16,17 +16,17 @@ import java.util.List;
 public class PlaylistRecyclerViewAdapter extends RecyclerView.Adapter<PlaylistViewHolder> {
     private List<Playlist> playlistList;
     private Context context;
-    private PlaylistViewHolder.OnPlaylistListener onPlaylistListener;
+    private PlaylistViewHolder.OnPlaylistClickListener onPlaylistClickListener;
 
-    public PlaylistRecyclerViewAdapter(List<Playlist> playlistList, Context context, PlaylistViewHolder.OnPlaylistListener onPlaylistListener) {
+    public PlaylistRecyclerViewAdapter(List<Playlist> playlistList, Context context, PlaylistViewHolder.OnPlaylistClickListener onPlaylistClickListener) {
         this.playlistList = playlistList;
         this.context = context;
-        this.onPlaylistListener = onPlaylistListener;
+        this.onPlaylistClickListener = onPlaylistClickListener;
     }
 
-    public PlaylistRecyclerViewAdapter(Context context, PlaylistViewHolder.OnPlaylistListener onPlaylistListener) {
+    public PlaylistRecyclerViewAdapter(Context context, PlaylistViewHolder.OnPlaylistClickListener onPlaylistClickListener) {
         this.context = context;
-        this.onPlaylistListener = onPlaylistListener;
+        this.onPlaylistClickListener = onPlaylistClickListener;
     }
 
     public void setPlaylistList(List<Playlist> playlistList) {
@@ -39,7 +39,7 @@ public class PlaylistRecyclerViewAdapter extends RecyclerView.Adapter<PlaylistVi
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.playlist_item, parent, false);
 
-        return new PlaylistViewHolder(itemView, onPlaylistListener);
+        return new PlaylistViewHolder(itemView, onPlaylistClickListener);
     }
 
     @Override

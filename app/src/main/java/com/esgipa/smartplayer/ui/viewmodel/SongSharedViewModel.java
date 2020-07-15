@@ -40,13 +40,18 @@ public class SongSharedViewModel extends ViewModel {
 
     public LiveData<Song> getSong(int position) {
         if(songList.getValue() != null) {
-            currentSong.setValue(songList.getValue().get(position));
+            if(songList.getValue().size() > 0) {
+                currentSong.setValue(songList.getValue().get(position));
+            } else {
+                currentSong.setValue(null);
+            }
         }
         return currentSong;
     }
 
     public void setMusicListUrl(ArrayList<String> musicListUrl) {
         this.musicListUrl = musicListUrl;
+        loadSongs();
     }
 
     public LiveData<Integer> getCurrentSongIndex() {
@@ -78,7 +83,7 @@ public class SongSharedViewModel extends ViewModel {
         if(musicListUrl != null) {
             for(String url: musicListUrl) {
                 Log.i("View Model", "loadSongs: " + url);
-                //url.replace("localhost", "192.168.0.14");
+                //localSongList.add(metaDataExtractor.extract("http://infinityandroid.com/music/good_times.mp3"));
                 localSongList.add(metaDataExtractor.extract(url));
             }
         }

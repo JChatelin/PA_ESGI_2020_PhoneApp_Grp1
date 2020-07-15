@@ -1,5 +1,6 @@
 package com.esgipa.smartplayer.ui.music;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
+import android.print.PrinterId;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,24 +21,32 @@ import android.widget.TextView;
 
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
+import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.data.model.Song;
 import com.esgipa.smartplayer.music.MusicPlayerService;
+import com.esgipa.smartplayer.ui.viewmodel.PlaylistSharedViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.SongSharedViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class MusicFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
-
+public class MusicFragment extends Fragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
+        MusicPlayerService.OnSongPlayingListener {
     private SongSharedViewModel songSharedViewModel;
+    private PlaylistSharedViewModel playlistSharedViewModel;
+
     private MusicPlayerService musicPlayerService;
     private MainActivity mainActivity;
+
     private long timerStart = 0;
     private long timerEnd = 0;
     private Song currentSong;
     private int currentSongIndex;
     private List<Song> songList;
+    private List<String> playlistNameList;
+    private List<Playlist> playlistList;
 
     private Handler myHandler = new Handler();
 
@@ -55,6 +65,8 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         /* get the instant of the music player service */
         mainActivity = (MainActivity) requireActivity();
         musicPlayerService = mainActivity.getMusicPlayerService();
+        musicPlayerService.isStartForPlaylist = false;
+        musicPlayerService.setOnSongPlayingListener(this);
 
         /* music metadata */
         albumArt = root.findViewById(R.id.music_album_art);
@@ -79,38 +91,62 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         songSharedViewModel.setContext(requireContext());
 
         songList = songSharedViewModel.getSongList().getValue();
+        if (songList != null) {
+            /* set on click listener to the images */
+            playPause.setOnClickListener(this);
+            previousSong.setOnClickListener(this);
+            nextSong.setOnClickListener(this);
+            playTimeBar.setOnSeekBarChangeListener(this);
+            add_to_playlist.setOnClickListener(this);
+            download.setOnClickListener(this);
 
-        /* set on click listener to the images */
-        playPause.setOnClickListener(this);
-        previousSong.setOnClickListener(this);
-        nextSong.setOnClickListener(this);
-        playTimeBar.setOnSeekBarChangeListener(this);
+            playlistNameList = new ArrayList<>();
 
-        download.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            playlistSharedViewModel = new ViewModelProvider(requireActivity()).get(PlaylistSharedViewModel.class);
+            playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
+                @Override
+                public void onChanged(List<Playlist> playlists) {
+                    playlistList = playlists;
+                    for (Playlist playlist : playlists) {
+                        if (!playlistNameList.contains(playlist.getName())) {
+                            playlistNameList.add(playlist.getName());
+                        }
+                    }
+                }
+            });
 
+            currentSong = songSharedViewModel.getSong(0).getValue();
+            if(currentSong != null) {
+                if (currentSong != null) {
+                    displaySongMetadata(currentSong);
+                    musicPlayerService.setActiveSong(currentSong);
+                    currentSongIndex = 0;
+                }
+
+                songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+                    @Override
+                    public void onChanged(Integer integer) {
+                        currentSong = songSharedViewModel.getSong(integer).getValue();
+                        displaySongMetadata(currentSong);
+                        musicPlayerService.setActiveSong(currentSong);
+                        currentSongIndex = integer;
+                    }
+                });
+            } else {
+                playPause.setClickable(false);
+                nextSong.setClickable(false);
+                previousSong.setClickable(false);
+                add_to_playlist.setClickable(false);
+                download.setClickable(false);
+                playTimeBar.setClickable(false);
+                playTimeBar.setOnSeekBarChangeListener(this);
+                playTimeStart.setText("0");
+                playTimeEnd.setText("0");
+                musicTitle.setText("Unknown");
+                musicArtist.setText("Unknown");
+                musicAlbumTitle.setText("Unknown");
             }
-        });
-
-        add_to_playlist.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mainActivity.chooseDirectory();
-            }
-        });
-
-        songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                Log.d("songIndex", "onChanged: " + integer);
-                currentSong = songSharedViewModel.getSong(integer).getValue();
-                displaySongMetadata(currentSong);
-                mainActivity.setDownlaodMusicName(currentSong.getTitle());
-                musicPlayerService.setActiveSong(currentSong);
-                currentSongIndex = integer;
-            }
-        });
+        }
         return root;
     }
 
@@ -139,10 +175,12 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     private void playPauseSong() {
         if (!musicPlayerService.songIsPlaying()) {
             musicPlayerService.playSong();
+            currentSong.isPlaying = true;
             updateTimerBar();
             playPause.setImageResource(R.drawable.ic_baseline_pause_24);
         } else {
             musicPlayerService.pauseSong();
+            currentSong.isPlaying = false;
             playPause.setImageResource(R.drawable.ic_baseline_play_arrow_24);
         }
     }
@@ -159,9 +197,26 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         playPause.setImageResource(R.drawable.ic_baseline_play_arrow_24);
     }
 
+    private void addToPlaylist() {
+        DialogFragment newFragment = new ChoosePlaylistDialogFragment(currentSong, playlistNameList, playlistList);
+        newFragment.show(mainActivity.getSupportFragmentManager(), "Playlists");
+    }
+
+    private void downloadMusic() {
+        DialogFragment newFragment = new ChooseDirectoryDialogFragment(currentSong);
+        newFragment.show(mainActivity.getSupportFragmentManager(), "Folders");
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.download:
+                musicPlayerService.stopMedia();
+                downloadMusic();
+                break;
+            case R.id.add_to_playlist:
+                addToPlaylist();
+                break;
             case R.id.play_pause:
                 playPauseSong();
                 break;
@@ -213,9 +268,11 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if(fromUser) {
-            seekBar.setProgress(progress);
-            musicPlayerService.setPlayerToPosition(progress);
-            updateTimerBar();
+            if(currentSong != null) {
+                seekBar.setProgress(progress);
+                musicPlayerService.setPlayerToPosition(progress);
+                updateTimerBar();
+            }
         }
     }
 
@@ -229,5 +286,14 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         // do nothing
     }
 
+    @Override
+    public void onSongPlaying() {
+        currentSong.isPlaying = true;
+        updateTimerBar();
+        playPause.setImageResource(R.drawable.ic_baseline_pause_24);
+    }
 
+    @Override
+    public void onSongStop() {
+    }
 }

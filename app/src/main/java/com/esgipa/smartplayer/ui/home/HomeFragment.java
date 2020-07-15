@@ -23,25 +23,30 @@ import com.esgipa.smartplayer.utils.UserProfileManager;
 
 import java.util.List;
 
-public class HomeFragment extends Fragment implements SongViewHolder.OnSongListener {
+public class HomeFragment extends Fragment implements SongViewHolder.OnSongListener{
     private SongSharedViewModel songSharedViewModel;
     private MainActivity mainActivity;
+
+    private RecyclerView recyclerView;
+    private SongRecyclerViewAdapter songRecyclerViewAdapter;
+
+    private String loadMusicUrl;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, final Bundle savedInstanceState) {
         songSharedViewModel = new ViewModelProvider(requireActivity()).get(SongSharedViewModel.class);
         songSharedViewModel.setContext(requireContext());
+        loadMusicUrl = requireContext().getResources().getString(R.string.server_url);
+        loadMusicUrl += "file";
         View root = inflater.inflate(R.layout.fragment_home, container, false);
-        final RecyclerView recyclerView = root.findViewById(R.id.recyclerView);
-        final SongRecyclerViewAdapter songRecyclerViewAdapter = new SongRecyclerViewAdapter(requireContext(), this);
+        recyclerView = root.findViewById(R.id.recyclerView);
+        songRecyclerViewAdapter = new SongRecyclerViewAdapter(this);
         mainActivity = (MainActivity) requireActivity();
+        mainActivity.setUrl(loadMusicUrl);
         mainActivity.loadAllMusic(UserProfileManager.getUserInfo(requireContext()).getAuthToken());
         songSharedViewModel.getSongList().observe(getViewLifecycleOwner(), new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songList) {
-                for (Song song: songList) {
-                    Log.i("HomeFragment", "onChanged: " + song.getTitle());
-                }
                 songRecyclerViewAdapter.setSongList(songList);
                 recyclerView.setAdapter(songRecyclerViewAdapter);
             }
@@ -58,6 +63,4 @@ public class HomeFragment extends Fragment implements SongViewHolder.OnSongListe
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
-
 }

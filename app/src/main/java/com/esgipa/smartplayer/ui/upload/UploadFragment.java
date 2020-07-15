@@ -16,17 +16,19 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
+import com.esgipa.smartplayer.music.MusicPlayerService;
 import com.esgipa.smartplayer.ui.viewmodel.DataTransfertViewModel;
 
 public class UploadFragment extends Fragment {
     public static final String TAG = "UploadFragment";
-    private static final String uploadUrl = "http://192.168.0.14:8082/file/upload";
+    private static final String uploadPath = "file/upload";
 
     private Button uploadButton;
     private ProgressBar progressBar;
     private TextView percentUpload;
 
     private MainActivity mainActivity;
+    private MusicPlayerService musicPlayerService;
 
     private DataTransfertViewModel dataTransfertViewModel;
 
@@ -36,15 +38,18 @@ public class UploadFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_upload, container, false);
+        String uploadUrl = getResources().getString(R.string.server_url)+uploadPath;
         uploadButton = root.findViewById(R.id.upload_button);
         percentUpload = root.findViewById(R.id.progress_text);
         progressBar = root.findViewById(R.id.progressBar);
         dataTransfertViewModel = new ViewModelProvider(requireActivity()).get(DataTransfertViewModel.class);
         mainActivity = (MainActivity) requireActivity();
+        musicPlayerService = mainActivity.getMusicPlayerService();
         mainActivity.setUrl(uploadUrl);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                musicPlayerService.stopMedia();
                 selectMusicFile();
             }
         });

@@ -12,7 +12,12 @@ public class Song implements Serializable {
     private String album;
     @Nullable
     private String albumArt;
+
+    private String fileName;
+
     private long duration;
+
+    public boolean isPlaying = false;
 
     public Song(String dataSource, String artist, String title, @Nullable String album, @Nullable String albumArt, long duration) {
         this.dataSource = dataSource;
@@ -31,6 +36,13 @@ public class Song implements Serializable {
         return artist;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 
     @Nullable
     public String getAlbum() {

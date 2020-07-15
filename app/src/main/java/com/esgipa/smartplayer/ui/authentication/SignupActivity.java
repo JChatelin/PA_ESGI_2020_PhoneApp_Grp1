@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,7 +24,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class SignupActivity extends AppCompatActivity implements Callback<JSONObject> {
-    private String signUpUrl = "http://192.168.0.14:8082/auth/signup";
+    private static final String signUpPath = "auth/signup";
     private EditText name;
     private EditText username;
     private EditText email;
@@ -36,6 +37,10 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
+        String signUpUrl = getResources().getString(R.string.server_url)+signUpPath;
+        Log.i("Sign in", "onCreate: url " + signUpUrl);
+
         name = findViewById(R.id.name);
         username = findViewById(R.id.username);
         email = findViewById(R.id.email);

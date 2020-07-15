@@ -15,19 +15,26 @@ public class PlaylistSharedViewModel extends ViewModel {
 
     private MutableLiveData<List<Playlist>> playlistList;
     private MutableLiveData<Playlist> currentPlaylist;
+    private List<Playlist> list = new ArrayList<>();
+    private List<Playlist> loadedPlaylist = new ArrayList<>();
 
     public PlaylistSharedViewModel() {
         playlistList = new MutableLiveData<>();
         currentPlaylist = new MutableLiveData<>();
     }
 
+    public void setLoadedPlaylist(List<Playlist> loadedPlaylist) {
+        this.loadedPlaylist = loadedPlaylist;
+    }
+
     public LiveData<List<Playlist>> getPlaylistList() {
-        //loadPlaylists();
+        loadPlaylists();
+        playlistList.postValue(list);
         return playlistList;
     }
 
     public LiveData<Playlist> getPlaylist(int position) {
-        //loadPlaylists();
+        loadPlaylists();
         if(playlistList.getValue() != null) {
             currentPlaylist.setValue(playlistList.getValue().get(position));
         }
@@ -35,13 +42,14 @@ public class PlaylistSharedViewModel extends ViewModel {
     }
 
     public void addPlaylist(Playlist playlist) {
-        List<Playlist> list = playlistList.getValue();
         list.add(playlist);
-        playlistList.setValue(list);
     }
 
     private void loadPlaylists() {
-        List<Playlist> localPlaylistList = new ArrayList<>();
-        playlistList.setValue(localPlaylistList);
+        for (Playlist playlist: loadedPlaylist) {
+            if(!list.contains(playlist)) {
+                list.add(playlist);
+            }
+        }
     }
 }

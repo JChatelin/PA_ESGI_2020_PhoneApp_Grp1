@@ -6,14 +6,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.media.MediaExtractor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.esgipa.smartplayer.data.model.Playlist;
+import com.esgipa.smartplayer.data.model.Song;
+import com.esgipa.smartplayer.music.MetaDataExtractor;
+import com.esgipa.smartplayer.ui.viewmodel.PlaylistSharedViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.SongSharedViewModel;
 import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.music.MusicPlayerService;
@@ -41,10 +48,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Callback<JSONObject> {
-
-    private static final String musicUrl = "http://192.168.0.14:8082/file";
 
     private static final int REQUEST_CODE_UPLOAD = 10;
     private static final int REQUEST_CODE_DOWNLOAD = 15;
@@ -55,10 +61,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
     public boolean downloading = false;
 
     private NetworkFragment networkFragment;
-    private String downlaodMusicName;
 
     private DataTransfertViewModel dataTransfertViewModel;
     private SongSharedViewModel songSharedViewModel;
+    private PlaylistSharedViewModel playlistSharedViewModel;
+
+    private MetaDataExtractor metaDataExtractor;
 
     /* return a instance of the music player service */
     public MusicPlayerService getMusicPlayerService() {
@@ -73,13 +81,17 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_playlists, R.id.navigation_upload, R.id.navigation_profile)
+                R.id.navigation_home, R.id.navigation_music, R.id.navigation_playlists, R.id.navigation_upload, R.id.navigation_profile)
                 .build();
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
+
+        String musicUrl = getResources().getString(R.string.server_url)+"file";
+        metaDataExtractor = new MetaDataExtractor(this);
         dataTransfertViewModel = new ViewModelProvider(this).get(DataTransfertViewModel.class);
         songSharedViewModel = new ViewModelProvider(this).get(SongSharedViewModel.class);
+        playlistSharedViewModel = new ViewModelProvider(this).get(PlaylistSharedViewModel.class);
         networkFragment = NetworkFragment.getInstance(getSupportFragmentManager(), musicUrl);
     }
 
@@ -87,9 +99,6 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
         networkFragment.changeUrl(url);
     }
 
-    public void setDownlaodMusicName(String fileName) {
-        downlaodMusicName = fileName;
-    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -159,14 +168,47 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
                     ArrayList<String> list = new ArrayList<>();
                     int len = musicList.length();
                     for (int i = 0; i < len; i++) {
-                        list.add(musicList.get(i).toString().replace("\"", ""));
+                        String url = musicList.get(i).toString().replace("\"", "");
+                        url = url.replace("download", "read");
+                        //list.add(musicList.get(i).toString().replace("\"", ""));
+                        Log.i("Mainactivity", "updateUi: " +url);
+                        list.add(url);
                     }
                     songSharedViewModel.setMusicListUrl(list);
+                }
+                if(requestResult.has("playlistList")) {
+                    JSONArray playlists = requestResult.getJSONArray("playlistList");
+                    ArrayList<Playlist> list = new ArrayList<>();
+                    int len = playlists.length();
+                    for (int i = 0; i < len; i++) {
+                        list.add(getPlaylistsFromJson((JSONObject) playlists.get(i)));
+                    }
+                    playlistSharedViewModel.setLoadedPlaylist(list);
                 }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private Playlist getPlaylistsFromJson(JSONObject playlist) throws JSONException {
+        String playlistName = playlist.getString("name");
+        JSONObject user = playlist.getJSONObject("user");
+        String playlistCreator = user.getString("username");
+        String playlistDescription = playlist.getString("description");
+        List<Song> musicList = new ArrayList<>();
+
+        if(playlist.has("musicList")) {
+            JSONArray  musicListJson = playlist.getJSONArray("musicList");
+            int len = musicListJson.length();
+            for (int i = 0; i < len; i++) {
+                String url = musicListJson.get(i).toString().replace("\"", "");
+                musicList.add(metaDataExtractor.extract(url));
+            }
+        }
+        Playlist playlist1 = new Playlist(playlistName, playlistCreator, playlistDescription);
+        playlist1.setMusicList(musicList);
+        return playlist1;
     }
 
     @Override
@@ -180,9 +222,11 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
             case Progress.GET_INPUT_STREAM_SUCCESS:
                 break;
             case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
+                Toast.makeText(this, "Fichier en cours de téléchargement", Toast.LENGTH_SHORT).show();
                 break;
             case Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS:
                 dataTransfertViewModel.setUploadPercentage(percentComplete);
+                Toast.makeText(this, "Fichier en cours d'upload", Toast.LENGTH_SHORT).show();
                 break;
             case Progress.PROCESS_INPUT_STREAM_SUCCESS:
                 break;
@@ -202,24 +246,30 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
         networkFragment.uplaodMusic(musicFileStream, authToken, fileName);
     }
 
-    private void downloadMusic(OutputStream musicFileStream, String authToken, String musicName) {
-        networkFragment.downloadMusic(musicFileStream, authToken, musicName);
+    public void downloadMusic(OutputStream musicFileStream, String authToken) {
+        networkFragment.downloadMusic(musicFileStream, authToken);
+    }
+
+    public void createPlaylist(String authToken, Playlist playlist) {
+        networkFragment.createPlaylist(authToken, playlist);
     }
 
     public void loadAllMusic(String authToken) {
         networkFragment.loadAllMusic(authToken);
     }
 
+    public void loadAllPlaylist(String authToken) {
+        networkFragment.loadAllPlaylist(authToken);
+    }
+
+    public void addMusicToPlaylist(String authToken, String playlistName, String musicTitle) {
+        networkFragment.addMusicToPlaylist(authToken, playlistName, musicTitle);
+    }
+
     public void pickUpMusic() {
         Intent chooseMusicFile = new Intent(Intent.ACTION_GET_CONTENT);
         chooseMusicFile.setType("*/*");
         startActivityForResult(chooseMusicFile, REQUEST_CODE_UPLOAD);
-    }
-
-    public void chooseDirectory() {
-        Intent chooseMusicFile = new Intent(Intent.ACTION_GET_CONTENT);
-        chooseMusicFile.setType("*/");
-        startActivityForResult(chooseMusicFile, REQUEST_CODE_DOWNLOAD);
     }
 
     @Override
@@ -240,25 +290,6 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
                         uploadMusic(musicFileStream, UserProfileManager.getUserInfo(this).getAuthToken(), getFileName(data.getData()));
                     } else {
                         Toast.makeText(this, "No music selected.", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        }
-        if(requestCode == REQUEST_CODE_DOWNLOAD) {
-            if(resultCode == Activity.RESULT_OK) {
-                if (data != null) {
-                    String directoryPath = data.getData().getPath();
-                    if (directoryPath != null) {
-                        String musicPath = directoryPath+downlaodMusicName+".mp3";
-                        File newMusicFile = new File(musicPath);
-                        try {
-                            OutputStream musicFileStream = new FileOutputStream(newMusicFile);
-                            downloadMusic(musicFileStream, UserProfileManager.getUserInfo(this).getAuthToken(), downlaodMusicName);
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        Toast.makeText(this, "No directory selected.", Toast.LENGTH_SHORT).show();
                     }
                 }
             }

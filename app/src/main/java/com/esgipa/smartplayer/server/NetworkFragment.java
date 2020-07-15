@@ -1,7 +1,6 @@
 package com.esgipa.smartplayer.server;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -10,15 +9,18 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.server.authentication.SigninTask;
 import com.esgipa.smartplayer.server.authentication.SignupTask;
-import com.esgipa.smartplayer.server.transfert.DownloadTask;
-import com.esgipa.smartplayer.server.transfert.LoadMusicTask;
-import com.esgipa.smartplayer.server.transfert.UploadTask;
+import com.esgipa.smartplayer.server.playlist.AddMusicToPlaylistTask;
+import com.esgipa.smartplayer.server.playlist.CreatePlaylistTask;
+import com.esgipa.smartplayer.server.filetransfert.DownloadTask;
+import com.esgipa.smartplayer.server.filetransfert.LoadMusicTask;
+import com.esgipa.smartplayer.server.filetransfert.UploadTask;
+import com.esgipa.smartplayer.server.playlist.LoadPlaylistsTask;
 
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -34,6 +36,9 @@ public class NetworkFragment extends Fragment {
     private UploadTask uploadTask;
     private DownloadTask downloadTask;
     private LoadMusicTask loadMusicTask;
+    private LoadPlaylistsTask loadPlaylistsTask;
+    private CreatePlaylistTask createPlaylistTask;
+    private AddMusicToPlaylistTask addMusicToPlaylistTask;
     private String urlString;
 
     public static NetworkFragment getInstance(FragmentManager fragmentManager, String url) {
@@ -97,6 +102,21 @@ public class NetworkFragment extends Fragment {
         loadMusicTask.execute(urlString);
     }
 
+    public void loadAllPlaylist(String authToken) {
+        loadPlaylistsTask = new LoadPlaylistsTask(callback, authToken);
+        loadPlaylistsTask.execute(urlString);
+    }
+
+    public void createPlaylist(String authToken, Playlist playlist) {
+        createPlaylistTask = new CreatePlaylistTask(callback, authToken, playlist);
+        createPlaylistTask.execute(urlString);
+    }
+
+    public void addMusicToPlaylist(String authToekn, String playlistName, String musicTitle) {
+        addMusicToPlaylistTask = new AddMusicToPlaylistTask(callback, authToekn, playlistName, musicTitle);
+        addMusicToPlaylistTask.execute(urlString);
+    }
+
     public void uplaodMusic(InputStream musicFileStream, String authToken, String fileName) {
         cancelUpload();
         uploadTask = new UploadTask(callback, musicFileStream, authToken, fileName);
@@ -104,9 +124,9 @@ public class NetworkFragment extends Fragment {
         Log.i(TAG, "uplaodMusic: upload started");
     }
 
-    public void downloadMusic(OutputStream musicFileStream, String authToken, String musicName) {
+    public void downloadMusic(OutputStream musicFileStream, String authToken) {
         cancelDownload();
-        downloadTask = new DownloadTask(callback, musicFileStream, authToken, musicName);
+        downloadTask = new DownloadTask(callback, musicFileStream, authToken);
         downloadTask.execute(urlString);
         Log.i(TAG, "downloadMusic: download started");
     }

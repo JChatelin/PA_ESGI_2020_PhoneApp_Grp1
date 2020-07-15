@@ -63,6 +63,13 @@
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp" />
 
+            <ImageView
+                android:id="@+id/isPlayingIcon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:srcCompat="@drawable/ic_baseline_music_note_24" />
+
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

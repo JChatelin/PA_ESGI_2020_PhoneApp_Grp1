@@ -1,11 +1,11 @@
-package com.esgipa.smartplayer.server.transfert;
+package com.esgipa.smartplayer.server.filetransfert;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
+import com.esgipa.smartplayer.utils.ConnectivityUtils;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
 import com.esgipa.smartplayer.utils.StreamReader;
@@ -13,20 +13,23 @@ import com.esgipa.smartplayer.utils.StreamReader;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
-    private Callback<JSONObject> callback;
-    private OutputStream musicFileStream;
-    private String authToken, fileName;
+public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
+    private final static String lineEnd = "\r\n";
+    private final static String twoHyphens = "--";
+    private final static String boundary = "===" + System.currentTimeMillis() + "===";
     private final static int maxBufferSize = 20 * 1024;
 
-    public DownloadTask(Callback<JSONObject> callback, OutputStream musicFileStream, String authToken, String fileName) {
+    private Callback<JSONObject> callback;
+    private InputStream musicFileStream;
+    private String authToken, fileName;
+
+    public UploadTask(Callback<JSONObject> callback, InputStream musicFileStream, String authToken, String fileName) {
         setCallback(callback);
         this.musicFileStream = musicFileStream;
         this.authToken = authToken;
@@ -48,7 +51,7 @@ public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
                     (networkInfo.getType() != ConnectivityManager.TYPE_WIFI
                             && networkInfo.getType() != ConnectivityManager.TYPE_MOBILE)) {
                 // If no connectivity, cancel task and update Callback with null data.
-                callback.updateUi(null);
+                callback.updateUi(ConnectivityUtils.noConnection());
                 cancel(true);
             }
         }
@@ -64,7 +67,7 @@ public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
             String urlString = urls[0];
             try {
                 URL url = new URL(urlString);
-                JSONObject jsonResult = downloadMusic(url, musicFileStream, authToken);//downloadUrl(url);
+                JSONObject jsonResult = uploadMusic(url, musicFileStream, authToken, fileName);
                 if (jsonResult != null) {
                     result = new RequestResult(jsonResult);
                 } else {
@@ -99,33 +102,63 @@ public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
     protected void onCancelled(RequestResult result) {
     }
 
-    private JSONObject downloadMusic(URL serverUrl, OutputStream musicFileStream, String authToken) throws IOException, JSONException {
+    @Override
+    protected void onProgressUpdate(Integer... values) {
+        super.onProgressUpdate(values);
+        callback.onProgressUpdate(Callback.Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS, values[0]);
+    }
+
+    private JSONObject uploadMusic(URL serverUrl, InputStream musicFileStream,
+                                   String authToken, String fileName) throws IOException, JSONException {
         InputStream stream = null;
         HttpURLConnection connection = null;
         JSONObject result = null;
+        // create a buffer of maximum size
+        byte[] buffer = new byte[maxBufferSize];
+        final int maxLength = musicFileStream.available();
+        int length, progress = 0;
 
-        try {
+        try{
             connection = (HttpURLConnection) serverUrl.openConnection();
 
-            // Timeout for reading InputStream arbitrarily set to 3000ms.
             connection.setReadTimeout(15000);
-            // Timeout for connection.connect() arbitrarily set to 3000ms.
             connection.setConnectTimeout(15000);
-            connection.setRequestMethod("GET");
-            connection.setDoInput(true);
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
 
+            // send file data
+            Log.i("StreamReader", "uploadMusic: "+serverUrl+ " " + fileName + " " + authToken);
             connection.setRequestProperty("Authorization", "Bearer " + authToken);
-            connection.setRequestProperty("Content-Type", "application/json; UTF-8");
-            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+
+            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"audio\";filename=\"" + fileName + "\"" + lineEnd);
+            dos.writeBytes("Content-Type: audio/mpeg" + lineEnd + lineEnd);
+
+            // read file and write it into form...
+            while ((length = musicFileStream.read(buffer)) != -1) {
+                dos.write(buffer, 0, length);
+                dos.flush();
+
+                progress += length;
+                publishProgress((100 * progress) / maxLength);
+            }
+            publishProgress(100);
+            // send multipart form data necessary after file data...
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            dos.flush();
+            dos.close();
 
             connection.connect();
             int responseCode = connection.getResponseCode();
-            switch (responseCode) {
+            switch(responseCode) {
                 case HttpURLConnection.HTTP_OK:
                     stream = connection.getInputStream();
                     if (stream != null) {
-                        readMusicDataStream(stream, musicFileStream);
-                        result = new JSONObject("Download Finished.");
+                        result = StreamReader.readStream(stream, 500);
                     }
                     break;
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
@@ -142,17 +175,5 @@ public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
             }
         }
         return result;
-    }
-
-    public static void readMusicDataStream(InputStream stream, OutputStream musicFileStream) throws IOException {
-        byte[] buffer = new byte[maxBufferSize];
-        int length, progress = 0;
-        while ((length = stream.read(buffer)) != -1) {
-            musicFileStream.write(buffer, 0, length);
-            musicFileStream.flush();
-
-            progress += length;
-            //publishProgress((100 * progress) / maxLength);
-        }
     }
 }

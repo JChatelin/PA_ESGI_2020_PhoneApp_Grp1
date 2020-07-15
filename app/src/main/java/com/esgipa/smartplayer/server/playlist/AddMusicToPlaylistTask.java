@@ -1,42 +1,39 @@
-package com.esgipa.smartplayer.server.transfert;
+package com.esgipa.smartplayer.server.playlist;
 
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.esgipa.smartplayer.utils.ConnectivityUtils;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
+import com.esgipa.smartplayer.utils.ConnectivityUtils;
 import com.esgipa.smartplayer.utils.StreamReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
-    private final static String lineEnd = "\r\n";
-    private final static String twoHyphens = "--";
-    private final static String boundary = "===" + System.currentTimeMillis() + "===";
-    private final static int maxBufferSize = 20 * 1024;
-
+public class AddMusicToPlaylistTask extends AsyncTask<String, Integer, RequestResult> {
+    /**
+     * Implementation of AsyncTask designed to fetch data from the network.
+     */
     private Callback<JSONObject> callback;
-    private InputStream musicFileStream;
-    private String authToken, fileName;
+    private String musicTitle, playlistName, authToken;
 
-    public UploadTask(Callback<JSONObject> callback, InputStream musicFileStream, String authToken, String fileName) {
+    public AddMusicToPlaylistTask(Callback<JSONObject> callback, String authToken, String playlistName, String musicTitle) {
         setCallback(callback);
-        this.musicFileStream = musicFileStream;
         this.authToken = authToken;
-        this.fileName = fileName;
+        this.playlistName = playlistName;
+        this.musicTitle = musicTitle;
     }
 
-    void setCallback(Callback<JSONObject> callback) {
+    public void setCallback(Callback<JSONObject> callback) {
         this.callback = callback;
     }
 
@@ -67,9 +64,9 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
             String urlString = urls[0];
             try {
                 URL url = new URL(urlString);
-                JSONObject jsonResult = uploadMusic(url, musicFileStream, authToken, fileName);
-                if (jsonResult != null) {
-                    result = new RequestResult(jsonResult);
+                JSONObject resultJson = addMusicToPlaylist(url, authToken, playlistName, musicTitle);
+                if (resultJson != null) {
+                    result = new RequestResult(resultJson);
                 } else {
                     throw new IOException("No response received.");
                 }
@@ -81,17 +78,22 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
     }
 
     /**
-     * Updates the DownloadCallback with the result.
+     * Updates the Callback with the result.
      */
     @Override
     protected void onPostExecute(RequestResult result) {
         if (result != null && callback != null) {
             if (result.exception != null) {
-                callback.updateUi(result.resultValue);
+                JSONObject jsonError = new JSONObject();
+                try {
+                    jsonError.put("Error", result.exception.getMessage());
+                    callback.updateUi(jsonError);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             } else if (result.resultValue != null) {
                 callback.updateUi(result.resultValue);
             }
-            callback.finishOperation();
         }
     }
 
@@ -102,65 +104,34 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
     protected void onCancelled(RequestResult result) {
     }
 
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-        callback.onProgressUpdate(Callback.Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS, values[0]);
-    }
-
-    private JSONObject uploadMusic(URL serverUrl, InputStream musicFileStream,
-                                   String authToken, String fileName) throws IOException, JSONException {
+    private JSONObject addMusicToPlaylist(URL serverUrl, String authToken, String playlistName, String musicTitle) throws IOException {
         InputStream stream = null;
         HttpURLConnection connection = null;
         JSONObject result = null;
-        String fieldName = "audio";
-        String musicTitle = "goosebumps";
-        String artist = "Travis Scott";
-        // create a buffer of maximum size
-        byte[] buffer = new byte[maxBufferSize];
-        final int maxLength = musicFileStream.available();
-        int length, progress = 0;
-
-        try{
+        try {
             connection = (HttpURLConnection) serverUrl.openConnection();
-
             connection.setReadTimeout(15000);
             connection.setConnectTimeout(15000);
             connection.setRequestMethod("POST");
-            connection.setDoInput(true);
+            connection.setRequestProperty("Authorization", "Bearer " + authToken);
+            connection.setRequestProperty("Content-Type", "application/json; UTF-8");
+            connection.setRequestProperty("Accept", "application/json");
+
+            // Already true by default but setting just in case; needs to be true since this request
+            // is carrying an input (response) body.
             connection.setDoOutput(true);
 
-            // send file data
-            Log.i("StreamReader", "uploadMusic: "+serverUrl+ " " + fileName + " " + authToken);
-            connection.setRequestProperty("Authorization", "Bearer " + authToken);
-            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="+boundary);
+            // Add parameters to the post request
+            JSONObject jsonBody = new JSONObject()
+                    .put("playlistName", playlistName)
+                    .put("musicTitle", musicTitle);
 
-            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"audio\";filename=\"" + fileName + "\"" + lineEnd);
-            dos.writeBytes("Content-Type: audio/mpeg" + lineEnd + lineEnd);
-
-            // read file and write it into form...
-            while ((length = musicFileStream.read(buffer)) != -1) {
-                dos.write(buffer, 0, length);
-                dos.flush();
-
-                progress += length;
-                publishProgress((100 * progress) / maxLength);
-            }
-            // send multipart form data necessary after file data...
-            dos.writeBytes(lineEnd);
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"title\"" + lineEnd + lineEnd);
-            dos.writeBytes(musicTitle + lineEnd);
-
-            dos.writeBytes(twoHyphens + boundary + lineEnd);
-            dos.writeBytes("Content-Disposition: form-data; name=\"artistName\"" + lineEnd + lineEnd);
-            dos.writeBytes(artist+ lineEnd);
-            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-            dos.flush();
-            dos.close();
+            Log.i("AddMusicToPlaylist", "AddMusicToPlaylist: " + serverUrl.toString());
+            OutputStream os = connection.getOutputStream();
+            byte[] input = jsonBody.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+            os.close();
+            // parameters end
 
             connection.connect();
             int responseCode = connection.getResponseCode();
@@ -172,10 +143,12 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
                     }
                     break;
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
-                    throw new IOException("Access denied.");
+                    throw new IOException("Invalid username and/or password.");
                 default:
                     throw new IOException("An error occurred.");
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         } finally {
             if (stream != null) {
                 stream.close();
