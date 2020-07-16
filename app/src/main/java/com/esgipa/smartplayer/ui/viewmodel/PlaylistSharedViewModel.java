@@ -46,10 +46,11 @@ public class PlaylistSharedViewModel extends ViewModel {
     }
 
     private void loadPlaylists() {
-        for (Playlist playlist: loadedPlaylist) {
+        /*for (Playlist playlist: loadedPlaylist) {
             if(!list.contains(playlist)) {
                 list.add(playlist);
             }
-        }
+        }*/
+        playlistList.postValue(loadedPlaylist);
     }
 }
