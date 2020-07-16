@@ -15,6 +15,6 @@
     <string name="sign_in">Sign In</string>
     <string name="username_or_email">username or email</string>
     <string name="artist">Artist</string>
-    <string name="server_url">http://192.168.0.14:8082/</string>
+    <string name="server_url">http://192.168.1.32:8082/</string>
     <string name="register_success">User registered successfully!</string>
 </resources>

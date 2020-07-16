@@ -21,11 +21,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.data.model.Song;
+import com.esgipa.smartplayer.ui.viewmodel.CurrentPlayingSongViewModel;
 import com.esgipa.smartplayer.utils.UserProfileManager;
 
 import java.io.IOException;
@@ -47,6 +49,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnPrepare
     private Context context;
 
     private OnSongPlayingListener onSongPlayingListener;
+    private CurrentPlayingSongViewModel currentPlayingSongViewModel;
     private Map<String, String> headers;
 
     private List<Song> playlist;

@@ -24,6 +24,7 @@ import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.data.model.Song;
 import com.esgipa.smartplayer.music.MusicPlayerService;
+import com.esgipa.smartplayer.ui.viewmodel.CurrentPlayingSongViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.PlaylistSharedViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.SongSharedViewModel;
 
@@ -36,6 +37,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         MusicPlayerService.OnSongPlayingListener {
     private SongSharedViewModel songSharedViewModel;
     private PlaylistSharedViewModel playlistSharedViewModel;
+    private CurrentPlayingSongViewModel currentPlayingSongViewModel;
 
     private MusicPlayerService musicPlayerService;
     private MainActivity mainActivity;
@@ -61,6 +63,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              final ViewGroup container, Bundle savedInstanceState) {
         songSharedViewModel = new ViewModelProvider(requireActivity()).get(SongSharedViewModel.class);
+        currentPlayingSongViewModel = new ViewModelProvider(requireActivity()).get(CurrentPlayingSongViewModel.class);
         View root = inflater.inflate(R.layout.fragment_music, container, false);
         /* get the instant of the music player service */
         mainActivity = (MainActivity) requireActivity();
@@ -90,6 +93,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
 
         songSharedViewModel.setContext(requireContext());
 
+
         songList = songSharedViewModel.getSongList().getValue();
         if (songList != null) {
             /* set on click listener to the images */
@@ -117,11 +121,9 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
 
             currentSong = songSharedViewModel.getSong(0).getValue();
             if(currentSong != null) {
-                if (currentSong != null) {
-                    displaySongMetadata(currentSong);
-                    musicPlayerService.setActiveSong(currentSong);
-                    currentSongIndex = 0;
-                }
+                displaySongMetadata(currentSong);
+                musicPlayerService.setActiveSong(currentSong);
+                currentSongIndex = 0;
 
                 songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
                     @Override

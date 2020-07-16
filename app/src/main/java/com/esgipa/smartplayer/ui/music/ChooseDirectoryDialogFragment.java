@@ -22,6 +22,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Environment.DIRECTORY_DOWNLOADS;
+import static android.os.Environment.DIRECTORY_MUSIC;
+
 public class ChooseDirectoryDialogFragment extends DialogFragment {
     private String selectedItem;
     private MainActivity mainActivity;
@@ -56,10 +59,10 @@ public class ChooseDirectoryDialogFragment extends DialogFragment {
                         selectedItem = directoryNames.get(selectedPosition);
                         switch (selectedItem) {
                             case "Music Folder":
-                                directoryPath = mainActivity.getExternalFilesDir(Environment.DIRECTORY_MUSIC).getPath();
+                                directoryPath = Environment.getExternalStoragePublicDirectory(DIRECTORY_MUSIC).getPath();
                                 break;
                             case "Download Folder":
-                                directoryPath = mainActivity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getPath();
+                                directoryPath = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS).getPath();
                                 break;
                         }
                         downloadMusic(directoryPath);
