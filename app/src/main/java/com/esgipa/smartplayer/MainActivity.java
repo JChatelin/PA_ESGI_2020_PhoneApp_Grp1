@@ -202,7 +202,9 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
             JSONArray  musicListJson = playlist.getJSONArray("musicList");
             int len = musicListJson.length();
             for (int i = 0; i < len; i++) {
-                String url = musicListJson.get(i).toString().replace("\"", "");
+                String url = getResources().getString(R.string.server_url);
+                url += "file/read/";
+                url += musicListJson.get(i).toString();
                 musicList.add(metaDataExtractor.extract(url));
             }
         }
