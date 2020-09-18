@@ -5,12 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/music_item"
+    app:cardCornerRadius="50dp"
     android:layout_margin="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="403dp"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/bg_item">
 
         <ImageView
             android:id="@+id/music_album_art"
@@ -40,6 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Music title"
+                android:textColor="@color/colorPrimaryDark"
                 android:textAppearance="?attr/textAppearanceHeadline2"
                 android:textSize="18sp" />
 
@@ -50,7 +53,7 @@
                 android:layout_marginTop="7dp"
                 android:text="Music artist"
                 android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
+                android:textColor="@color/login_form_details"
                 android:textSize="16sp" />
 
             <TextView
@@ -59,8 +62,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="7dp"
                 android:text="Music Album title"
+                android:textColor="@color/login_form_details"
                 android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp" />
 
             <ImageView

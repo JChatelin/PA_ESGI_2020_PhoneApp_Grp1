@@ -3,6 +3,18 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
-
     <color name="black_overlay">#66000000</color>
+    <color name="dark_blue">#3023AE</color>
+    <color name="purple">#D377E3</color>
+    <color name="purple_clear">#CE7ED5</color>
+    <color name="blue_clear">#B4E5FB</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="blue">#2196F3</color>
+    <color name="darkBluePrimaryLight">#5A4095</color>
+
+    <color name="login_form_details">#ccffffff</color>
+    <color name="login_form_details_light">#1affffff</color>
+    <color name="login_form_details_medium">#66ffffff</color>
+
 </resources>

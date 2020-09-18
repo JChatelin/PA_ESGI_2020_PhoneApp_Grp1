@@ -125,7 +125,7 @@ public class CreatePlaylistTask extends AsyncTask<String, Integer, RequestResult
             // Add parameters to the post request
             JSONObject jsonBody = new JSONObject()
                     .put("name", playlist.getName())
-                    .put("user", playlist.getCreator())
+                    //.put("user", playlist.getCreator())
                     .put("description", playlist.getDescription());
 
             Log.i("createPlaylist", "createPlaylist: "+serverUrl.toString());

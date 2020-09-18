@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@drawable/bg_login"
     android:orientation="vertical"
     tools:context=".ui.authentication.SigninActivity">
 
@@ -17,7 +17,7 @@
         android:gravity="center_horizontal"
         android:text="@string/sign_in"
         android:textAlignment="center"
-        android:textColor="#2196F3"
+        android:textColor="@color/white"
         android:textSize="30sp"
         android:textStyle="bold|italic" />
 
@@ -28,6 +28,10 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="50dp"
         android:layout_marginRight="10dp"
+        android:background="@drawable/et_bg"
+        android:textColor="@color/white"
+        android:textColorHint="@color/login_form_details"
+        android:padding="15dp"
         android:hint="@string/username_or_email"
         android:inputType="text" />
 
@@ -38,6 +42,10 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
+        android:background="@drawable/et_bg"
+        android:textColor="@color/white"
+        android:textColorHint="@color/login_form_details"
+        android:padding="15dp"
         android:hint="@string/password"
         android:inputType="textPassword" />
 
@@ -48,6 +56,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="60dp"
         android:layout_marginRight="10dp"
+        android:background="@drawable/btn_bg"
+        android:textColor="@color/login_form_details"
         android:text="@string/sign_in" />
 
     <LinearLayout
@@ -63,6 +73,7 @@
             android:layout_width="243dp"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
+            android:textColor="@color/login_form_details_medium"
             android:text="Don't have an account?"
             android:textAlignment="center"
             android:textSize="16sp" />
@@ -74,7 +85,7 @@
             android:clickable="true"
             android:focusable="true"
             android:text="@string/sign_up"
-            android:textColor="#2196F3"
+            android:textColor="@color/white"
             android:textSize="16sp" />
     </LinearLayout>
 

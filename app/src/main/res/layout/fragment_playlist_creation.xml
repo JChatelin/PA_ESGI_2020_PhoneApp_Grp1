@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@drawable/main_bg"
     android:orientation="vertical"
     tools:context=".ui.playlists.PlaylistCreationFragment">
 
@@ -14,6 +14,7 @@
         android:layout_marginTop="50dp"
         android:layout_marginRight="20dp"
         android:gravity="center"
+        android:textColor="@color/white"
         android:text="Playlist Creation"
         android:textSize="30sp" />
 
@@ -21,9 +22,13 @@
         android:id="@+id/playlist_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="10dp"
         android:layout_marginTop="50dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginRight="10dp"
+        android:textColor="@color/white"
+        android:background="@drawable/et_bg"
+        android:textColorHint="@color/login_form_details"
+        android:padding="15dp"
         android:hint="playlist name"
         android:textSize="18sp" />
 
@@ -31,9 +36,13 @@
         android:id="@+id/playlist_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/et_bg"
+        android:textColor="@color/white"
+        android:textColorHint="@color/login_form_details"
+        android:padding="15dp"
         android:hint="playlist description"
         android:textSize="18sp" />
 
@@ -44,6 +53,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginTop="50dp"
         android:layout_marginRight="10dp"
+        android:background="@drawable/btn_playlist"
+        android:textColor="@color/login_form_details"
         android:text="create" />
 
 </LinearLayout>

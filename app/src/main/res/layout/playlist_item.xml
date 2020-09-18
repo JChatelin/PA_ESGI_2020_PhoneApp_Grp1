@@ -5,11 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/music_item"
+    app:cardCornerRadius="50dp"
     android:layout_margin="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_item"
         android:orientation="vertical">
 
         <!-- Media -->
@@ -41,6 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Playlist name"
+                android:textColor="@color/colorPrimaryDark"
                 android:textAppearance="?attr/textAppearanceHeadline2"
                 android:textSize="18sp" />
 
@@ -51,7 +54,7 @@
                 android:layout_marginTop="5dp"
                 android:text="playlist creator"
                 android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
+                android:textColor="@color/login_form_details"
                 android:textSize="16sp" />
 
             <TextView
@@ -61,7 +64,7 @@
                 android:layout_marginTop="5dp"
                 android:text="playlist description"
                 android:textAppearance="?attr/textAppearanceBody2"
-                android:textColor="?android:attr/textColorSecondary"
+                android:textColor="@color/login_form_details"
                 android:textSize="14sp" />
 
         </LinearLayout>

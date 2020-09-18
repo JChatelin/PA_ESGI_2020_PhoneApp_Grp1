@@ -152,6 +152,12 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         return root;
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+    }
+
     private void displaySongMetadata(Song song) {
         if (song.getAlbumArt() != null) {
             //albumArt.setImageBitmap(song.getAlbumArt());
