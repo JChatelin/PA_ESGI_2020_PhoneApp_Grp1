@@ -73,18 +73,19 @@ public class PlaylistFragment extends Fragment implements SongViewHolder.OnSongL
         playlistDescription = root.findViewById(R.id.playlist_description);
 
         playButton = root.findViewById(R.id.play);
+        if (getArguments() != null) {
+            int playListPosition = getArguments().getInt(PLAYLIST_POSITION);
 
-        int playListPosition = getArguments().getInt(PLAYLIST_POSITION);
-
-        playlistSharedViewModel.getPlaylist(playListPosition).observe(getViewLifecycleOwner(), new Observer<Playlist>() {
-            @Override
-            public void onChanged(Playlist playlist) {
-                musicList = playlist.getMusicList();
-                displayInformation(playlist);
-                songRecyclerViewAdapter.setSongList(playlist.getMusicList());
-                recyclerView.setAdapter(songRecyclerViewAdapter);
-            }
-        });
+            playlistSharedViewModel.getPlaylist(playListPosition).observe(getViewLifecycleOwner(), new Observer<Playlist>() {
+                @Override
+                public void onChanged(Playlist playlist) {
+                    musicList = playlist.getMusicList();
+                    displayInformation(playlist);
+                    songRecyclerViewAdapter.setSongList(playlist.getMusicList());
+                    recyclerView.setAdapter(songRecyclerViewAdapter);
+                }
+            });
+        }
 
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override

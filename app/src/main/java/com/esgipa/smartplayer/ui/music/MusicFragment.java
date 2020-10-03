@@ -25,6 +25,7 @@ import com.esgipa.smartplayer.data.model.Playlist;
 import com.esgipa.smartplayer.data.model.Song;
 import com.esgipa.smartplayer.music.MusicPlayerService;
 import com.esgipa.smartplayer.ui.viewmodel.CurrentPlayingSongViewModel;
+import com.esgipa.smartplayer.ui.viewmodel.DataTransfertViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.PlaylistSharedViewModel;
 import com.esgipa.smartplayer.ui.viewmodel.SongSharedViewModel;
 
@@ -38,6 +39,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     private SongSharedViewModel songSharedViewModel;
     private PlaylistSharedViewModel playlistSharedViewModel;
     private CurrentPlayingSongViewModel currentPlayingSongViewModel;
+    private DataTransfertViewModel dataTransfertViewModel;
 
     private MusicPlayerService musicPlayerService;
     private MainActivity mainActivity;
@@ -50,7 +52,8 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     private List<String> playlistNameList;
     private List<Playlist> playlistList;
 
-    private Handler myHandler = new Handler();
+    public static Handler myHandler = new Handler();
+    private static Runnable runnable;
 
     private ImageView albumArt, playPause, previousSong, nextSong, download, add_to_playlist;
     private TextView musicTitle, musicArtist, musicAlbumTitle, playTimeStart, playTimeEnd;
@@ -64,6 +67,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
                              final ViewGroup container, Bundle savedInstanceState) {
         songSharedViewModel = new ViewModelProvider(requireActivity()).get(SongSharedViewModel.class);
         currentPlayingSongViewModel = new ViewModelProvider(requireActivity()).get(CurrentPlayingSongViewModel.class);
+        dataTransfertViewModel = new ViewModelProvider(requireActivity()).get(DataTransfertViewModel.class);
         View root = inflater.inflate(R.layout.fragment_music, container, false);
         /* get the instant of the music player service */
         mainActivity = (MainActivity) requireActivity();
@@ -124,7 +128,12 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
                 displaySongMetadata(currentSong);
                 musicPlayerService.setActiveSong(currentSong);
                 currentSongIndex = 0;
-
+                dataTransfertViewModel.getDownloadPercentage().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+                    @Override
+                    public void onChanged(Integer integer) {
+                        ChooseDirectoryDialogFragment.updateProgressBar(integer);
+                    }
+                });
                 songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
                     @Override
                     public void onChanged(Integer integer) {
@@ -166,6 +175,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         musicTitle.setText(song.getTitle());
         musicArtist.setText(song.getArtist());
         musicAlbumTitle.setText(song.getAlbum());
+        albumArt.setImageBitmap(song.getAlbumArt());
 
         playTimeEnd.setText(String.format(Locale.FRENCH, "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(timerEnd),
@@ -256,6 +266,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
         );
         playTimeBar.setProgress((int) timerStart);
         myHandler.postDelayed(UpdateSongTime, 100);
+        runnable = UpdateSongTime;
     }
 
     private Runnable UpdateSongTime = new Runnable() {
@@ -271,6 +282,11 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
             myHandler.postDelayed(this, 100);
         }
     };
+
+    public static void stopRunnable() {
+        myHandler.removeCallbacks(runnable);
+        //myHandler.post(runnable);
+    }
 
     // this part handle music navigation
     @Override

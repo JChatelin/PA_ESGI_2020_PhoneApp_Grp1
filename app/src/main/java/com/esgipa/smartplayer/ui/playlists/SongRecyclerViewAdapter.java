@@ -45,6 +45,7 @@ public class SongRecyclerViewAdapter extends RecyclerView.Adapter<SongViewHolder
         holder.musicTitle.setText(songList.get(position).getTitle());
         holder.musicArtist.setText(songList.get(position).getArtist());
         holder.musicAlbumTitle.setText(songList.get(position).getAlbum());
+        holder.musicalbumArt.setImageBitmap(songList.get(position).getAlbumArt());
         if(songList.get(position).getAlbumArt() != null) {
             //holder.musicalbumArt.setImageBitmap(songList.get(position).getAlbumArt());
         }

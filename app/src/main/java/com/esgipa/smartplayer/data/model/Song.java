@@ -1,5 +1,8 @@
 package com.esgipa.smartplayer.data.model;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import androidx.annotation.Nullable;
 
 import java.io.Serializable;
@@ -11,7 +14,7 @@ public class Song implements Serializable {
     @Nullable
     private String album;
     @Nullable
-    private String albumArt;
+    private byte[] albumArt;
 
     private String fileName;
 
@@ -19,7 +22,7 @@ public class Song implements Serializable {
 
     public boolean isPlaying = false;
 
-    public Song(String dataSource, String artist, String title, @Nullable String album, @Nullable String albumArt, long duration) {
+    public Song(String dataSource, String artist, String title, @Nullable String album, @Nullable byte[] albumArt, long duration) {
         this.dataSource = dataSource;
         this.artist = artist;
         this.title = title;
@@ -54,8 +57,8 @@ public class Song implements Serializable {
     }
 
     @Nullable
-    public String getAlbumArt() {
-        return albumArt;
+    public Bitmap getAlbumArt() {
+        return BitmapFactory.decodeByteArray(albumArt, 0, albumArt.length);
     }
 
     public long getDuration() {

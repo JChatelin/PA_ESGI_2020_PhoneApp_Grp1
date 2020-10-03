@@ -3,6 +3,7 @@ package com.esgipa.smartplayer.ui.music;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,15 +41,21 @@ public class ChoosePlaylistDialogFragment extends DialogFragment {
         addMusicUrl = getContext().getResources().getString(R.string.server_url);
         addMusicUrl += "playlist/music";
         CharSequence[] cs = playlistNameList.toArray(new CharSequence[playlistNameList.size()]);
+        if (playlistNameList.isEmpty()) {
+            dismiss();
+            Toast.makeText(mainActivity, "You need to create a playlist first", Toast.LENGTH_SHORT).show();
+        }
 
         builder.setTitle("Playlist picker")
                 .setSingleChoiceItems(cs, 0, null)
                 .setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                        selectedItem = playlistList.get(selectedPosition);
-                        addMusic();
+                        if (!playlistList.isEmpty()) {
+                            int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                            selectedItem = playlistList.get(selectedPosition);
+                            addMusic();
+                        }
                     }
                 })
                 .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {

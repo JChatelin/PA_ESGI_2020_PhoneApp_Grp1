@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_playlists"
+        android:id="@+id/navigation_playlists_list"
         android:name="com.esgipa.smartplayer.ui.playlists.PlaylistListFragment"
         android:label="@string/title_playlist_list"
         tools:layout="@layout/fragment_playlist_list" />
@@ -22,6 +22,24 @@
         android:name="com.esgipa.smartplayer.ui.upload.UploadFragment"
         android:label="@string/title_upload"
         tools:layout="@layout/fragment_upload" />
+
+    <fragment
+        android:id="@+id/navigation_download"
+        android:name="com.esgipa.smartplayer.ui.download.DownloadFragment"
+        android:label="@string/title_download"
+        tools:layout="@layout/fragment_download" />
+
+    <fragment
+        android:id="@+id/navigation_playlists"
+        android:name="com.esgipa.smartplayer.ui.playlists.PlaylistFragment"
+        android:label="@string/title_playlist_list"
+        tools:layout="@layout/fragment_playlist" />
+
+    <fragment
+        android:id="@+id/navigation_playlist_creation"
+        android:name="com.esgipa.smartplayer.ui.playlists.PlaylistCreationFragment"
+        android:label="@string/title_playlist_list"
+        tools:layout="@layout/fragment_playlist_creation" />
 
     <fragment
         android:id="@+id/navigation_profile"

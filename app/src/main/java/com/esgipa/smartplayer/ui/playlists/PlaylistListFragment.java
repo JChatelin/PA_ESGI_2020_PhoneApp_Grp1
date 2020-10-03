@@ -29,6 +29,7 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
     private PlaylistSharedViewModel playlistSharedViewModel;
     private FloatingActionButton createPlaylist;
     private String loadPlaylistUrl;
+    private Thread loadingThread;
 
     private MainActivity mainActivity;
 
@@ -59,14 +60,26 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
                 openPlaylistCreationForm();
             }
         });
-        playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
+        loadPlaylistAsync(playlistSharedViewModel, playlistRecyclerViewAdapter, recyclerView);
+        return root;
+    }
+
+    private void loadPlaylistAsync(final PlaylistSharedViewModel playlistSharedViewModel,
+                                   final PlaylistRecyclerViewAdapter playlistRecyclerViewAdapter,
+                                   final RecyclerView recyclerView) {
+        loadingThread = new Thread( new Runnable(){
             @Override
-            public void onChanged(@Nullable List<Playlist> playlistList) {
-                playlistRecyclerViewAdapter.setPlaylistList(playlistList);
-                recyclerView.setAdapter(playlistRecyclerViewAdapter);
+            public void run() {
+                playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
+                    @Override
+                    public void onChanged(@Nullable List<Playlist> playlistList) {
+                        playlistRecyclerViewAdapter.setPlaylistList(playlistList);
+                        recyclerView.setAdapter(playlistRecyclerViewAdapter);
+                    }
+                });
             }
         });
-        return root;
+        loadingThread.start();
     }
 
     private void openPlaylistCreationForm() {

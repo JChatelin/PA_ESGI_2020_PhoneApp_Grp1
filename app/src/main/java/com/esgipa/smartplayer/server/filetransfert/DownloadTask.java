@@ -151,13 +151,12 @@ public class  DownloadTask extends AsyncTask<String, Integer, RequestResult> {
     public void readMusicDataStream(InputStream stream, OutputStream musicFileStream) throws IOException {
         byte[] buffer = new byte[maxBufferSize];
         final int maxLength = stream.available();
-        int length, progress = 0;
+        int length;
         while ((length = stream.read(buffer)) != -1) {
             musicFileStream.write(buffer, 0, length);
             musicFileStream.flush();
 
-            progress += length;
-            publishProgress((100 * progress) / maxLength);
+            publishProgress((100 * length) / maxLength);
         }
     }
 }

@@ -47,6 +47,7 @@ public class MetaDataExtractor {
         String musictTitle = mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_TITLE);
         String albumTitle = mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ALBUM);
         String artist = mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_ARTIST);
+        byte[] albumArt = mmr.getEmbeddedPicture();
         String durationString = mmr.extractMetadata(FFmpegMediaMetadataRetriever.METADATA_KEY_DURATION);
         /*metadataRetriever.setDataSource(musicUrl);
         String musicTitle = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
@@ -63,7 +64,7 @@ public class MetaDataExtractor {
             artist = "Unknown";
         }
         long duration = Long.parseLong(durationString.trim());
-        Song newSong = new Song(musicUrl, artist, musictTitle, albumTitle, null, duration);
+        Song newSong = new Song(musicUrl, artist, musictTitle, albumTitle, albumArt, duration);
         newSong.setFileName(musicUrl.substring(musicUrl.lastIndexOf("/")));
         return newSong;
     }

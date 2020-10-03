@@ -5,6 +5,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.esgipa.smartplayer.ui.upload.UploadFragment;
 import com.esgipa.smartplayer.utils.ConnectivityUtils;
 import com.esgipa.smartplayer.server.Callback;
 import com.esgipa.smartplayer.server.RequestResult;
@@ -125,6 +126,7 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
             connection.setConnectTimeout(15000);
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
+            UploadFragment.maxProgress = maxLength;
 
             // send file data
             Log.i("StreamReader", "uploadMusic: "+serverUrl+ " " + fileName + " " + authToken);
@@ -142,10 +144,8 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
                 dos.write(buffer, 0, length);
                 dos.flush();
 
-                progress += length;
-                publishProgress((100 * progress) / maxLength);
+                publishProgress((100 * length) / maxLength);
             }
-            publishProgress(100);
             // send multipart form data necessary after file data...
             dos.writeBytes(lineEnd);
             dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);

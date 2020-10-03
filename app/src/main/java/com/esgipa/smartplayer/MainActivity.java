@@ -53,7 +53,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements Callback<JSONObject> {
 
     private static final int REQUEST_CODE_UPLOAD = 10;
-    private static final int REQUEST_CODE_DOWNLOAD = 15;
 
     private MusicPlayerService musicPlayerService;
     public boolean musicServiceBound = false;
@@ -205,7 +204,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
                 String url = getResources().getString(R.string.server_url);
                 url += "file/read/";
                 url += musicListJson.get(i).toString();
-                musicList.add(metaDataExtractor.extract(url));
+                try {
+                    musicList.add(metaDataExtractor.extract(url));
+                } catch (Exception e) {
+                    Toast.makeText(this, "An error occured during the loading of the playlist",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         }
         Playlist playlist1 = new Playlist(playlistName, playlistCreator, playlistDescription);
@@ -224,10 +228,12 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
             case Progress.GET_INPUT_STREAM_SUCCESS:
                 break;
             case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
+                dataTransfertViewModel.setDownloadPercentage(percentComplete);
                 Toast.makeText(this, "Fichier en cours de téléchargement", Toast.LENGTH_SHORT).show();
                 break;
             case Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS:
                 dataTransfertViewModel.setUploadPercentage(percentComplete);
+
                 Toast.makeText(this, "Fichier en cours d'upload", Toast.LENGTH_SHORT).show();
                 break;
             case Progress.PROCESS_INPUT_STREAM_SUCCESS:

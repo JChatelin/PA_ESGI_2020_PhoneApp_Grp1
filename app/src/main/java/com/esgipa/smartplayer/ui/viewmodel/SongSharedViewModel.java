@@ -3,11 +3,13 @@ package com.esgipa.smartplayer.ui.viewmodel;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.Song;
 import com.esgipa.smartplayer.music.MetaDataExtractor;
@@ -22,6 +24,7 @@ public class SongSharedViewModel extends ViewModel {
     private MutableLiveData<Song> currentSong;
     private MutableLiveData<Integer> currentSongIndex;
     private ArrayList<String> musicListUrl;
+    private Context context;
 
     public SongSharedViewModel() {
         songList = new MutableLiveData<>();
@@ -31,6 +34,7 @@ public class SongSharedViewModel extends ViewModel {
 
     public void setContext(Context context) {
         metaDataExtractor = new MetaDataExtractor(context);
+        this.context = context;
     }
 
     public LiveData<List<Song>> getSongList() {
@@ -84,7 +88,11 @@ public class SongSharedViewModel extends ViewModel {
             for(String url: musicListUrl) {
                 Log.i("View Model", "loadSongs: " + url);
                 //localSongList.add(metaDataExtractor.extract("http://infinityandroid.com/music/good_times.mp3"));
-                localSongList.add(metaDataExtractor.extract(url));
+                try {
+                    localSongList.add(metaDataExtractor.extract(url));
+                } catch (Exception e) {
+                    Toast.makeText(context, "An error during song loading", Toast.LENGTH_SHORT).show();
+                }
             }
         }
 

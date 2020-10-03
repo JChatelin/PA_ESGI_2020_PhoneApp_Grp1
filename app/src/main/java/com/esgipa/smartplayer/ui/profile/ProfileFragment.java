@@ -16,6 +16,7 @@ import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.data.model.User;
 import com.esgipa.smartplayer.music.MusicPlayerService;
+import com.esgipa.smartplayer.ui.music.MusicFragment;
 import com.esgipa.smartplayer.utils.UserProfileManager;
 import com.esgipa.smartplayer.ui.authentication.SigninActivity;
 
@@ -56,6 +57,7 @@ public class ProfileFragment extends Fragment {
     private void logout() {
         musicPlayerService.pauseSong();
         musicPlayerService.stopSelf();
+        MusicFragment.stopRunnable();
         UserProfileManager.deleteUserInfo(requireContext());
         startActivity(new Intent(requireContext(), SigninActivity.class));
         requireActivity().finish();

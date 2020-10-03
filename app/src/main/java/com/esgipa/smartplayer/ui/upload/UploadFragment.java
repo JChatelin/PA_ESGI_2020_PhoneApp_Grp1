@@ -2,6 +2,7 @@ package com.esgipa.smartplayer.ui.upload;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.esgipa.smartplayer.MainActivity;
 import com.esgipa.smartplayer.R;
 import com.esgipa.smartplayer.music.MusicPlayerService;
+import com.esgipa.smartplayer.ui.music.ChooseDirectoryDialogFragment;
 import com.esgipa.smartplayer.ui.viewmodel.DataTransfertViewModel;
 
 public class UploadFragment extends Fragment {
@@ -32,8 +34,8 @@ public class UploadFragment extends Fragment {
 
     private DataTransfertViewModel dataTransfertViewModel;
 
-    private Handler hdlr = new Handler();
     private int progress;
+    public static int maxProgress;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -46,6 +48,7 @@ public class UploadFragment extends Fragment {
         mainActivity = (MainActivity) requireActivity();
         musicPlayerService = mainActivity.getMusicPlayerService();
         mainActivity.setUrl(uploadUrl);
+        progressBar.setMax(maxProgress);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,29 +74,16 @@ public class UploadFragment extends Fragment {
 
     private void updateProgressBar(final int percentComplete) {
         progress = progressBar.getProgress();
-        new Thread(new Runnable() {
-            public void run() {
-                while (progress < 100) {
-                    progress += percentComplete;
-                    // Update the progress bar and display the current value in text view
-                    hdlr.post(new Runnable() {
-                        public void run() {
-                            progressBar.setProgress(progress);
-                            if (progress >= 100) {
-                                percentUpload.setText("100%");
-                            } else {
-                                percentUpload.setText(progress + "%");
-                            }
-                        }
-                    });
-                    try {
-                        // Sleep for 100 milliseconds to show the progress slowly.
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+
+        while (progressBar.getProgress() < progressBar.getMax()) {
+            try {
+                progress += percentComplete;
+                progressBar.setProgress(progress);
+                percentUpload.setText(progress + "%");
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        }).start();
+        }
     }
 }
