@@ -50,5 +50,6 @@ public class PlaylistSharedViewModel extends ViewModel {
         for (Playlist playlist: loadedPlaylist) {
             list.add(playlist);
         }
+//        playlistList.postValue(loadedPlaylist);
     }
 }
