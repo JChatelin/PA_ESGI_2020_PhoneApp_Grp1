@@ -46,10 +46,10 @@ public class PlaylistSharedViewModel extends ViewModel {
     }
 
     private void loadPlaylists() {
-        list.clear();
+        /*list.clear();
         for (Playlist playlist: loadedPlaylist) {
             list.add(playlist);
-        }
-//        playlistList.postValue(loadedPlaylist);
+        }*/
+        playlistList.postValue(loadedPlaylist);
     }
 }
