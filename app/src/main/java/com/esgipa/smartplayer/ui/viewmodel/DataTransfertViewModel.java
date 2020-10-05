@@ -23,10 +23,10 @@ public class DataTransfertViewModel extends ViewModel {
     }
 
     public void setUploadPercentage(Integer uploadPercentage) {
-        this.uploadPercentage.setValue(uploadPercentage);
+        this.uploadPercentage.postValue(uploadPercentage);
     }
 
     public void setDownloadPercentage(Integer downloadPercentage) {
-        this.downloadPercentage.setValue(downloadPercentage);
+        this.downloadPercentage.postValue(downloadPercentage);
     }
 }

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
     private EditText password;
     private Button signUpButton;
     private Switch roleSwitch;
+    private ProgressBar progressBar;
     private NetworkFragment networkFragment;
 
     @Override
@@ -46,6 +48,7 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
         roleSwitch = findViewById(R.id.switch1);
+        progressBar = findViewById(R.id.progressBarSignup);
         signUpButton = findViewById(R.id.sign_up_button);
         networkFragment = NetworkFragment.getInstance(getSupportFragmentManager(), signUpUrl);
         // to change the network fragment url
@@ -53,9 +56,11 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 sendSignUpRequest();
             }
         });
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -74,6 +79,7 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
         try {
             if(requestResult.has("Error")) {
                 Toast.makeText(this, requestResult.getString("Error"), Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
             }
             if(requestResult.has("message")) {
                 String message = requestResult.getString("message");
@@ -82,6 +88,7 @@ public class SignupActivity extends AppCompatActivity implements Callback<JSONOb
                     startActivity(new Intent(SignupActivity.this, SigninActivity.class));
                     finish();
                 }
+                progressBar.setVisibility(View.GONE);
             }
         } catch (JSONException e) {
             e.printStackTrace();

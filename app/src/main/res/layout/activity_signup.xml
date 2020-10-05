@@ -77,6 +77,16 @@
         android:hint="@string/password"
         android:inputType="textPassword" />
 
+    <ProgressBar
+        android:id="@+id/progressBarSignup"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
     <Switch
         android:id="@+id/switch1"
         android:layout_width="match_parent"

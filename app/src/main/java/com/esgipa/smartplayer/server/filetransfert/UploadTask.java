@@ -24,7 +24,6 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
     private final static String lineEnd = "\r\n";
     private final static String twoHyphens = "--";
     private final static String boundary = "===" + System.currentTimeMillis() + "===";
-    private final static int maxBufferSize = 20 * 1024;
 
     private Callback<JSONObject> callback;
     private InputStream musicFileStream;
@@ -106,7 +105,12 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        callback.onProgressUpdate(Callback.Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS, values[0]);
+        Log.i("UploadTask", "onProgressUpdate: value : " + values[0]);
+        if (values[0] > 10) {
+            callback.onProgressUpdate(Callback.Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS, 10);
+        } else {
+            callback.onProgressUpdate(Callback.Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS, values[0]);
+        }
     }
 
     private JSONObject uploadMusic(URL serverUrl, InputStream musicFileStream,
@@ -115,7 +119,7 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
         HttpURLConnection connection = null;
         JSONObject result = null;
         // create a buffer of maximum size
-        byte[] buffer = new byte[maxBufferSize];
+        byte[] buffer = new byte[musicFileStream.available() / 10];
         final int maxLength = musicFileStream.available();
         int length, progress = 0;
 
@@ -143,8 +147,8 @@ public class UploadTask extends AsyncTask<String, Integer, RequestResult> {
             while ((length = musicFileStream.read(buffer)) != -1) {
                 dos.write(buffer, 0, length);
                 dos.flush();
-
-                publishProgress((100 * length) / maxLength);
+                int percentage = maxLength / length;
+                publishProgress(percentage);
             }
             // send multipart form data necessary after file data...
             dos.writeBytes(lineEnd);

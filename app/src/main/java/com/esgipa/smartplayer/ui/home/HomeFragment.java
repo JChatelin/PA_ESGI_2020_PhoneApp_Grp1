@@ -5,6 +5,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +30,7 @@ public class HomeFragment extends Fragment implements SongViewHolder.OnSongListe
     private MainActivity mainActivity;
 
     private RecyclerView recyclerView;
+    private ProgressBar progressBar;
     private SongRecyclerViewAdapter songRecyclerViewAdapter;
 
     private String loadMusicUrl;
@@ -42,13 +45,20 @@ public class HomeFragment extends Fragment implements SongViewHolder.OnSongListe
         recyclerView = root.findViewById(R.id.recyclerView);
         songRecyclerViewAdapter = new SongRecyclerViewAdapter(this);
         mainActivity = (MainActivity) requireActivity();
+        progressBar = root.findViewById(R.id.progressBarHome);
         mainActivity.setUrl(loadMusicUrl);
+
+        Toast.makeText(mainActivity, "before loading music", Toast.LENGTH_SHORT).show();
         mainActivity.loadAllMusic(UserProfileManager.getUserInfo(requireContext()).getAuthToken());
+        Toast.makeText(mainActivity, "music loaded", Toast.LENGTH_SHORT).show();
+
         songSharedViewModel.getSongList().observe(getViewLifecycleOwner(), new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songList) {
+                progressBar.setVisibility(View.VISIBLE);
                 songRecyclerViewAdapter.setSongList(songList);
                 recyclerView.setAdapter(songRecyclerViewAdapter);
+                progressBar.setVisibility(View.GONE);
             }
         });
         return root;

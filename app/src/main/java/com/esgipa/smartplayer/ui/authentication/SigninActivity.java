@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
     private EditText password;
     private TextView signUpText;
     private Button signInButton;
+    private ProgressBar progressBar;
 
     private NetworkFragment networkFragment;
 
@@ -44,13 +46,16 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
         password = findViewById(R.id.password);
         signUpText = findViewById(R.id.sign_up_link);
         signInButton = findViewById(R.id.sign_in_button);
+        progressBar = findViewById(R.id.progressBarSignin);
         networkFragment = NetworkFragment.getInstance(getSupportFragmentManager(), signInUrl);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 sendSignInRequest();
             }
         });
+        progressBar.setVisibility(View.GONE);
 
         signUpText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,6 +70,7 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
         try {
             if(requestResult.has("Error")) {
                 Toast.makeText(this, requestResult.getString("Error"), Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
             }
             if (requestResult.has("token")) {
                 JWT jwt = new JWT(requestResult.getString("token"));
@@ -74,6 +80,7 @@ public class SigninActivity extends AppCompatActivity implements Callback<JSONOb
                         jwt.getClaim("email").asString(),
                         true);
                 UserProfileManager.saveUserInfo(SigninActivity.this, user);
+                progressBar.setVisibility(View.GONE);
                 startActivity(new Intent(SigninActivity.this, MainActivity.class));
                 finish();
             }

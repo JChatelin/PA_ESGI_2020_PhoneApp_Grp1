@@ -128,12 +128,6 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
                 displaySongMetadata(currentSong);
                 musicPlayerService.setActiveSong(currentSong);
                 currentSongIndex = 0;
-                dataTransfertViewModel.getDownloadPercentage().observe(getViewLifecycleOwner(), new Observer<Integer>() {
-                    @Override
-                    public void onChanged(Integer integer) {
-                        ChooseDirectoryDialogFragment.updateProgressBar(integer);
-                    }
-                });
                 songSharedViewModel.getCurrentSongIndex().observe(getViewLifecycleOwner(), new Observer<Integer>() {
                     @Override
                     public void onChanged(Integer integer) {
@@ -168,9 +162,6 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     }
 
     private void displaySongMetadata(Song song) {
-        if (song.getAlbumArt() != null) {
-            //albumArt.setImageBitmap(song.getAlbumArt());
-        }
         timerEnd = song.getDuration();
         musicTitle.setText(song.getTitle());
         musicArtist.setText(song.getArtist());
@@ -223,6 +214,7 @@ public class MusicFragment extends Fragment implements View.OnClickListener, See
     private void downloadMusic() {
         DialogFragment newFragment = new ChooseDirectoryDialogFragment(currentSong);
         newFragment.show(mainActivity.getSupportFragmentManager(), "Folders");
+        mainActivity.setDownloadingSong(currentSong);
     }
 
     @Override

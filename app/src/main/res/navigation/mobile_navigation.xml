@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_upload">
 
     <fragment
         android:id="@+id/navigation_home"
@@ -22,12 +22,6 @@
         android:name="com.esgipa.smartplayer.ui.upload.UploadFragment"
         android:label="@string/title_upload"
         tools:layout="@layout/fragment_upload" />
-
-    <fragment
-        android:id="@+id/navigation_download"
-        android:name="com.esgipa.smartplayer.ui.download.DownloadFragment"
-        android:label="@string/title_download"
-        tools:layout="@layout/fragment_download" />
 
     <fragment
         android:id="@+id/navigation_playlists"

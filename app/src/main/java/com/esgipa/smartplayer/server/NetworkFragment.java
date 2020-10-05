@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.esgipa.smartplayer.data.model.Playlist;
+import com.esgipa.smartplayer.data.model.Song;
 import com.esgipa.smartplayer.server.authentication.SigninTask;
 import com.esgipa.smartplayer.server.authentication.SignupTask;
 import com.esgipa.smartplayer.server.playlist.AddMusicToPlaylistTask;
@@ -39,6 +40,8 @@ public class NetworkFragment extends Fragment {
     private LoadPlaylistsTask loadPlaylistsTask;
     private CreatePlaylistTask createPlaylistTask;
     private AddMusicToPlaylistTask addMusicToPlaylistTask;
+    private Context ctxt;
+    private Song downloadSong;
     private String urlString;
 
     public static NetworkFragment getInstance(FragmentManager fragmentManager, String url) {
@@ -58,6 +61,13 @@ public class NetworkFragment extends Fragment {
         this.urlString = urlString;
     }
 
+    public void setContext(Context context) {
+        this.ctxt = context;
+    }
+
+    public void setDownloadSong(Song downloadSong) {
+        this.downloadSong = downloadSong;
+    }
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,6 +137,8 @@ public class NetworkFragment extends Fragment {
     public void downloadMusic(OutputStream musicFileStream, String authToken) {
         cancelDownload();
         downloadTask = new DownloadTask(callback, musicFileStream, authToken);
+        downloadTask.setContext(ctxt);
+        downloadTask.setCurrentSong(downloadSong);
         downloadTask.execute(urlString);
         Log.i(TAG, "downloadMusic: download started");
     }

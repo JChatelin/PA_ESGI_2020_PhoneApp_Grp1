@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +30,7 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
     private PlaylistSharedViewModel playlistSharedViewModel;
     private FloatingActionButton createPlaylist;
     private String loadPlaylistUrl;
-    private Thread loadingThread;
+    private ProgressBar progressBar;
 
     private MainActivity mainActivity;
 
@@ -48,6 +49,7 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
         loadPlaylistUrl = requireContext().getResources().getString(R.string.server_url);
         loadPlaylistUrl += "playlist";
 
+        progressBar = root.findViewById(R.id.progressBarPlaylist);
         mainActivity = (MainActivity) requireActivity();
         mainActivity.setUrl(loadPlaylistUrl);
         mainActivity.loadAllPlaylist(UserProfileManager.getUserInfo(requireContext()).getAuthToken());
@@ -60,26 +62,22 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
                 openPlaylistCreationForm();
             }
         });
+        progressBar.setVisibility(View.VISIBLE);
         loadPlaylistAsync(playlistSharedViewModel, playlistRecyclerViewAdapter, recyclerView);
+        progressBar.setVisibility(View.GONE);
         return root;
     }
 
     private void loadPlaylistAsync(final PlaylistSharedViewModel playlistSharedViewModel,
                                    final PlaylistRecyclerViewAdapter playlistRecyclerViewAdapter,
                                    final RecyclerView recyclerView) {
-        loadingThread = new Thread( new Runnable(){
+        playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
             @Override
-            public void run() {
-                playlistSharedViewModel.getPlaylistList().observe(getViewLifecycleOwner(), new Observer<List<Playlist>>() {
-                    @Override
-                    public void onChanged(@Nullable List<Playlist> playlistList) {
-                        playlistRecyclerViewAdapter.setPlaylistList(playlistList);
-                        recyclerView.setAdapter(playlistRecyclerViewAdapter);
-                    }
-                });
+            public void onChanged(@Nullable List<Playlist> playlistList) {
+                playlistRecyclerViewAdapter.setPlaylistList(playlistList);
+                recyclerView.setAdapter(playlistRecyclerViewAdapter);
             }
         });
-        loadingThread.start();
     }
 
     private void openPlaylistCreationForm() {

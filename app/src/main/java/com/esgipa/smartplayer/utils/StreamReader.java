@@ -24,6 +24,7 @@ public class StreamReader {
             buffer.append(rawBuffer, 0, readSize);
             maxReadSize -= readSize;
         }
+        stream.close();
         return new JSONObject(buffer.toString());
     }
 }

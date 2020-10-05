@@ -135,6 +135,7 @@ public class AddMusicToPlaylistTask extends AsyncTask<String, Integer, RequestRe
 
             connection.connect();
             int responseCode = connection.getResponseCode();
+            Log.i("AddMusicToPlaylist", "addMusicToPlaylist: code response : " + responseCode);
             switch(responseCode) {
                 case HttpURLConnection.HTTP_OK:
                     stream = connection.getInputStream();
