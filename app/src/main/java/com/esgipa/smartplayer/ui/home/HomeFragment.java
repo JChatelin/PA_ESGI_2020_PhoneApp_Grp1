@@ -48,19 +48,19 @@ public class HomeFragment extends Fragment implements SongViewHolder.OnSongListe
         progressBar = root.findViewById(R.id.progressBarHome);
         mainActivity.setUrl(loadMusicUrl);
 
-        Toast.makeText(mainActivity, "before loading music", Toast.LENGTH_SHORT).show();
+        progressBar.setVisibility(View.VISIBLE);
+        //Toast.makeText(mainActivity, "before loading music", Toast.LENGTH_SHORT).show();
         mainActivity.loadAllMusic(UserProfileManager.getUserInfo(requireContext()).getAuthToken());
-        Toast.makeText(mainActivity, "music loaded", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(mainActivity, "music loaded", Toast.LENGTH_SHORT).show();
 
         songSharedViewModel.getSongList().observe(getViewLifecycleOwner(), new Observer<List<Song>>() {
             @Override
             public void onChanged(@Nullable List<Song> songList) {
-                progressBar.setVisibility(View.VISIBLE);
                 songRecyclerViewAdapter.setSongList(songList);
                 recyclerView.setAdapter(songRecyclerViewAdapter);
-                progressBar.setVisibility(View.GONE);
             }
         });
+        progressBar.setVisibility(View.GONE);
         return root;
     }
 

@@ -122,14 +122,17 @@ public class LoadMusicTask extends AsyncTask<String, Integer, RequestResult> {
             int responseCode = connection.getResponseCode();
             switch (responseCode) {
                 case HttpURLConnection.HTTP_OK:
+                    Log.i("loadMusic", "loadAllMusic: http ok");
                     stream = connection.getInputStream();
                     if (stream != null) {
                         result = StreamReader.readStream(stream, 500);
                     }
                     break;
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
+                    Log.i("loadMusic", "loadAllMusic: http 401");
                     throw new IOException("Access denied.");
                 default:
+                    Log.i("loadMusic", "loadAllMusic: http default");
                     throw new IOException("An error occurred.");
             }
         } finally {

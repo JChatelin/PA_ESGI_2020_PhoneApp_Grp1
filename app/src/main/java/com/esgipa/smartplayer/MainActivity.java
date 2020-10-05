@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements Callback<JSONObje
             case Progress.GET_INPUT_STREAM_SUCCESS:
                 break;
             case Progress.PROCESS_OUTPUT_STREAM_IN_PROGRESS:
-                Toast.makeText(this, "Fichier en cours d'upload " + percentComplete, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Fichier en cours d'upload " + percentComplete, Toast.LENGTH_SHORT).show();
                 Log.i("MainActivity", "onProgressUpdate: " + percentComplete);
                 UploadFragment.updateProgressBar(percentComplete);
                 break;

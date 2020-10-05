@@ -72,5 +72,6 @@ public class ChoosePlaylistDialogFragment extends DialogFragment {
         selectedItem.addMusic(currentSong);
         mainActivity.addMusicToPlaylist(UserProfileManager.getUserInfo(requireContext()).getAuthToken(),
                 selectedItem.getName(), currentSong.getTitle());
+        Toast.makeText(mainActivity, "Music add to playlist!", Toast.LENGTH_SHORT).show();
     }
 }

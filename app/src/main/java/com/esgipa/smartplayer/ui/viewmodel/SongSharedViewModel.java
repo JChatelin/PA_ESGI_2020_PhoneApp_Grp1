@@ -95,17 +95,6 @@ public class SongSharedViewModel extends ViewModel {
                 }
             }
         }
-
-        /*Field[] fields = R.raw.class.getFields();
-
-        for (Field field : fields) {
-            try {
-                int resourceId = field.getInt(field);
-                localSongList.add(metaDataExtractor.extract(resourceId));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }*/
         songList.setValue(localSongList);
     }
 }

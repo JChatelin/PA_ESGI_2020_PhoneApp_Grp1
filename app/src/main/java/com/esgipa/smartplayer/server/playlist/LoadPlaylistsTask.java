@@ -59,6 +59,7 @@ public class LoadPlaylistsTask extends AsyncTask<String, Integer, RequestResult>
             try {
                 URL url = new URL(urlString);
                 JSONObject jsonResult = loadAllPlaylists(url, authToken);
+                Log.i("LoadPlaylist", "doInBackground: got results");
                 if (jsonResult != null) {
                     result = new RequestResult(jsonResult);
                 } else {
@@ -121,14 +122,17 @@ public class LoadPlaylistsTask extends AsyncTask<String, Integer, RequestResult>
             int responseCode = connection.getResponseCode();
             switch (responseCode) {
                 case HttpURLConnection.HTTP_OK:
+                    Log.i("LoadPlaylist", "loadAllPlaylists: http ok");
                     stream = connection.getInputStream();
                     if (stream != null) {
                         result = StreamReader.readStream(stream, 500);
                     }
                     break;
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
+                    Log.i("LoadPlaylist", "loadAllPlaylists: http 401");
                     throw new IOException("Access denied.");
                 default:
+                    Log.i("LoadPlaylist", "loadAllPlaylists: http default");
                     throw new IOException("An error occurred.");
             }
         } finally {

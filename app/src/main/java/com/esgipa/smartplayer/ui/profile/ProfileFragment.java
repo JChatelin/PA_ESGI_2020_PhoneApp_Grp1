@@ -55,7 +55,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void logout() {
-        musicPlayerService.pauseSong();
+        musicPlayerService.stopMedia();
         musicPlayerService.stopSelf();
         MusicFragment.stopRunnable();
         UserProfileManager.deleteUserInfo(requireContext());

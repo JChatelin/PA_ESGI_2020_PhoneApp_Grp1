@@ -64,7 +64,6 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
         });
         progressBar.setVisibility(View.VISIBLE);
         loadPlaylistAsync(playlistSharedViewModel, playlistRecyclerViewAdapter, recyclerView);
-        progressBar.setVisibility(View.GONE);
         return root;
     }
 
@@ -76,8 +75,10 @@ public class PlaylistListFragment extends Fragment implements PlaylistViewHolder
             public void onChanged(@Nullable List<Playlist> playlistList) {
                 playlistRecyclerViewAdapter.setPlaylistList(playlistList);
                 recyclerView.setAdapter(playlistRecyclerViewAdapter);
+                progressBar.setVisibility(View.GONE);
             }
         });
+        progressBar.setVisibility(View.GONE);
     }
 
     private void openPlaylistCreationForm() {
